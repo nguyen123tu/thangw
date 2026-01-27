@@ -1,0 +1,579 @@
+@* Right Sidebar - Friends & Suggestions (Real Data) *@
+<aside class="layout-right">
+    <div class="contacts-widget">
+        <h3 class="widget-title">Bạn bè</h3>
+        
+        <div class="contacts-list" id="contacts-container">
+            <div class="contact-placeholder">
+                <i class="fa-solid fa-spinner fa-spin" style="font-size: 24px; color: var(--lofi-muted); margin-bottom: 8px;"></i>
+                <p style="font-size: 13px; color: var(--lofi-muted); text-align: center;">
+                    Đang tải...
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="contacts-widget" style="margin-top: 16px;">
+        <h3 class="widget-title">Gợi ý kết bạn</h3>
+        <div class="contacts-list" id="suggestions-container">
+            <div class="contact-placeholder">
+                <i class="fa-solid fa-spinner fa-spin" style="font-size: 24px; color: var(--lofi-muted); margin-bottom: 8px;"></i>
+                <p style="font-size: 13px; color: var(--lofi-muted); text-align: center;">
+                    Đang tải...
+                </p>
+            </div>
+        </div>
+    </div>
+</aside>
+
+<!-- Mini Chat Windows Container -->
+<div id="miniChatContainer"></div>
+
+<style>
+.contact-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 16px;
+    text-align: center;
+}
+
+.contact-placeholder p {
+    margin: 0;
+}
+
+.contact-item {
+    cursor: pointer;
+}
+
+.suggestion-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    border-radius: var(--radius-organic-sm);
+    transition: var(--transition-smooth);
+    border: var(--border-width) solid transparent;
+}
+
+.suggestion-item:hover {
+    background: var(--lofi-cream);
+    border-color: var(--border-primary);
+}
+
+.suggestion-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: var(--border-width) solid var(--border-primary);
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.suggestion-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.suggestion-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.suggestion-mutual {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.btn-add-friend-sm {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--lofi-sage);
+    border: var(--border-width) solid var(--border-primary);
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    box-shadow: 2px 2px 0 var(--border-primary);
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.btn-add-friend-sm:hover {
+    transform: translate(2px, 2px);
+    box-shadow: none;
+}
+
+.btn-add-friend-sm:disabled {
+    background: var(--lofi-muted);
+    cursor: not-allowed;
+}
+
+/* Mini Chat Window Styles */
+#miniChatContainer {
+    position: fixed;
+    bottom: 0;
+    right: 90px;
+    display: flex;
+    gap: 12px;
+    z-index: 999;
+}
+
+.mini-chat-window {
+    width: 328px;
+    height: 420px;
+    background: var(--lofi-white);
+    border: 3px solid var(--lofi-dark);
+    border-bottom: none;
+    border-radius: 12px 12px 0 0;
+    box-shadow: -4px -4px 0 var(--lofi-dark);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: slideUp 0.3s ease;
+}
+
+@@keyframes slideUp {
+    from { transform: translateY(100%); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.mini-chat-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: var(--lofi-sage);
+    border-bottom: 3px solid var(--lofi-dark);
+    cursor: pointer;
+}
+
+.mini-chat-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid white;
+    object-fit: cover;
+}
+
+.mini-chat-name {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 600;
+    color: white;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.mini-chat-actions {
+    display: flex;
+    gap: 4px;
+}
+
+.mini-chat-action {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    border: none;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+}
+
+.mini-chat-action:hover {
+    background: rgba(255,255,255,0.3);
+}
+
+.mini-chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: var(--lofi-cream);
+}
+
+.mini-msg {
+    max-width: 80%;
+    padding: 8px 12px;
+    border-radius: 16px;
+    font-size: 13px;
+    line-height: 1.4;
+    word-wrap: break-word;
+    animation: msgPop 0.2s ease;
+}
+
+@@keyframes msgPop {
+    from { transform: scale(0.8); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.mini-msg.own {
+    align-self: flex-end;
+    background: var(--lofi-sage);
+    color: white;
+    border-bottom-right-radius: 4px;
+}
+
+.mini-msg.other {
+    align-self: flex-start;
+    background: var(--lofi-white);
+    border: 2px solid var(--lofi-dark);
+    border-bottom-left-radius: 4px;
+}
+
+.mini-chat-typing {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    font-size: 12px;
+    color: var(--lofi-muted);
+}
+
+.typing-dots-mini {
+    display: flex;
+    gap: 3px;
+}
+
+.typing-dots-mini span {
+    width: 6px;
+    height: 6px;
+    background: var(--lofi-muted);
+    border-radius: 50%;
+    animation: typingDot 1.4s infinite ease-in-out;
+}
+
+.typing-dots-mini span:nth-child(1) { animation-delay: 0s; }
+.typing-dots-mini span:nth-child(2) { animation-delay: 0.2s; }
+.typing-dots-mini span:nth-child(3) { animation-delay: 0.4s; }
+
+@@keyframes typingDot {
+    0%, 60%, 100% { transform: translateY(0); }
+    30% { transform: translateY(-4px); }
+}
+
+.mini-chat-input-area {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    background: var(--lofi-white);
+    border-top: 2px solid var(--lofi-dark);
+}
+
+.mini-chat-input {
+    flex: 1;
+    border: 2px solid var(--lofi-muted);
+    border-radius: 20px;
+    padding: 8px 14px;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.mini-chat-input:focus {
+    border-color: var(--lofi-sage);
+}
+
+.mini-chat-send {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--lofi-sage);
+    border: 2px solid var(--lofi-dark);
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 2px 2px 0 var(--lofi-dark);
+    transition: all 0.2s;
+}
+
+.mini-chat-send:hover {
+    transform: translate(2px, 2px);
+    box-shadow: none;
+}
+
+.mini-chat-empty {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--lofi-muted);
+    text-align: center;
+    padding: 20px;
+}
+
+.mini-chat-empty i {
+    font-size: 32px;
+    margin-bottom: 8px;
+    opacity: 0.5;
+}
+</style>
+
+<script>
+(function() {
+    'use strict';
+    
+    // Mini chat windows manager
+    window.miniChats = {};
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        loadFriends();
+        loadSuggestions();
+    });
+    
+    async function loadFriends() {
+        const container = document.getElementById('contacts-container');
+        if (!container) return;
+        
+        try {
+            const response = await fetch('/Profile/GetFriends');
+            const data = await response.json();
+            
+            console.log('Friends data:', data);
+            
+            if (data.success && data.friends && data.friends.length > 0) {
+                container.innerHTML = data.friends.map(function(friend) {
+                    var name = friend.fullName || friend.name || 'User';
+                    var avatar = friend.avatar || '/assets/user.png';
+                    return '<div class="contact-item" data-user-id="' + friend.userId + '" onclick="openMiniChat(' + friend.userId + ', \'' + escapeHtml(name).replace(/'/g, "\\'") + '\', \'' + avatar + '\')">' +
+                        '<div class="contact-avatar">' +
+                        '<img src="' + avatar + '" alt="' + escapeHtml(name) + '">' +
+                        '</div>' +
+                        '<div class="contact-info">' +
+                        '<div class="contact-name">' + escapeHtml(name) + '</div>' +
+                        '</div>' +
+                        '</div>';
+                }).join('');
+            } else {
+                container.innerHTML = '<div class="contact-placeholder">' +
+                    '<i class="fa-solid fa-user-group" style="font-size: 32px; color: var(--lofi-muted); margin-bottom: 8px;"></i>' +
+                    '<p style="font-size: 13px; color: var(--lofi-muted); text-align: center;">Chưa có bạn bè</p>' +
+                    '</div>';
+            }
+        } catch (error) {
+            console.error('Error loading friends:', error);
+            container.innerHTML = '<div class="contact-placeholder">' +
+                '<p style="font-size: 13px; color: var(--lofi-muted);">Không thể tải danh sách</p>' +
+                '</div>';
+        }
+    }
+    
+    async function loadSuggestions() {
+        const container = document.getElementById('suggestions-container');
+        if (!container) return;
+        
+        try {
+            const response = await fetch('/Profile/GetFriendSuggestions');
+            const data = await response.json();
+            
+            console.log('Suggestions data:', data);
+            
+            if (data.success && data.data && data.data.length > 0) {
+                container.innerHTML = data.data.slice(0, 5).map(function(user) {
+                    var name = user.fullName || user.name || 'User';
+                    var avatar = user.avatar || '/assets/user.png';
+                    return '<div class="suggestion-item">' +
+                        '<img src="' + avatar + '" alt="' + escapeHtml(name) + '" class="suggestion-avatar">' +
+                        '<div class="suggestion-info">' +
+                        '<div class="suggestion-name">' + escapeHtml(name) + '</div>' +
+                        '</div>' +
+                        '<button class="btn-add-friend-sm" onclick="addFriendFromSidebar(' + user.userId + ', this)" title="Kết bạn">' +
+                        '<i class="fa-solid fa-user-plus"></i>' +
+                        '</button>' +
+                        '</div>';
+                }).join('');
+            } else {
+                container.innerHTML = '<div class="contact-placeholder">' +
+                    '<i class="fa-solid fa-user-plus" style="font-size: 32px; color: var(--lofi-muted); margin-bottom: 8px;"></i>' +
+                    '<p style="font-size: 13px; color: var(--lofi-muted); text-align: center;">Không có gợi ý</p>' +
+                    '</div>';
+            }
+        } catch (error) {
+            console.error('Error loading suggestions:', error);
+            container.innerHTML = '<div class="contact-placeholder">' +
+                '<p style="font-size: 13px; color: var(--lofi-muted);">Không thể tải gợi ý</p>' +
+                '</div>';
+        }
+    }
+    
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+    
+    // Open mini chat window
+    window.openMiniChat = function(userId, name, avatar) {
+        // Check if already open
+        if (window.miniChats[userId]) {
+            window.miniChats[userId].querySelector('.mini-chat-input').focus();
+            return;
+        }
+        
+        // Limit to 3 chat windows
+        const openChats = Object.keys(window.miniChats);
+        if (openChats.length >= 3) {
+            closeMiniChat(parseInt(openChats[0]));
+        }
+        
+        const container = document.getElementById('miniChatContainer');
+        const chatWindow = document.createElement('div');
+        chatWindow.className = 'mini-chat-window';
+        chatWindow.id = 'miniChat-' + userId;
+        chatWindow.innerHTML = 
+            '<div class="mini-chat-header">' +
+                '<img src="' + avatar + '" alt="' + name + '" class="mini-chat-avatar">' +
+                '<span class="mini-chat-name">' + name + '</span>' +
+                '<div class="mini-chat-actions">' +
+                    '<button class="mini-chat-action" onclick="event.stopPropagation(); window.location.href=\'/Message/' + userId + '\'" title="Mở rộng">' +
+                        '<i class="fa-solid fa-expand"></i>' +
+                    '</button>' +
+                    '<button class="mini-chat-action" onclick="event.stopPropagation(); closeMiniChat(' + userId + ')" title="Đóng">' +
+                        '<i class="fa-solid fa-xmark"></i>' +
+                    '</button>' +
+                '</div>' +
+            '</div>' +
+            '<div class="mini-chat-messages" id="miniMessages-' + userId + '">' +
+                '<div class="mini-chat-empty">' +
+                    '<i class="fa-solid fa-comments"></i>' +
+                    '<p>Bắt đầu trò chuyện</p>' +
+                '</div>' +
+            '</div>' +
+            '<div class="mini-chat-input-area">' +
+                '<input type="text" class="mini-chat-input" placeholder="Aa" onkeypress="if(event.key===\'Enter\')sendMiniMessage(' + userId + ')">' +
+                '<button class="mini-chat-send" onclick="sendMiniMessage(' + userId + ')">' +
+                    '<i class="fa-solid fa-paper-plane"></i>' +
+                '</button>' +
+            '</div>';
+        
+        container.appendChild(chatWindow);
+        window.miniChats[userId] = chatWindow;
+        
+        // Load messages
+        loadMiniMessages(userId);
+        
+        // Focus input
+        chatWindow.querySelector('.mini-chat-input').focus();
+        
+        // Poll for new messages
+        chatWindow.pollInterval = setInterval(function() {
+            loadMiniMessages(userId);
+        }, 3000);
+    };
+    
+    window.closeMiniChat = function(userId) {
+        const chatWindow = window.miniChats[userId];
+        if (chatWindow) {
+            if (chatWindow.pollInterval) {
+                clearInterval(chatWindow.pollInterval);
+            }
+            chatWindow.remove();
+            delete window.miniChats[userId];
+        }
+    };
+    
+    window.loadMiniMessages = async function(userId) {
+        try {
+            const response = await fetch('/Message/GetMessages?partnerId=' + userId);
+            const data = await response.json();
+            
+            const messagesDiv = document.getElementById('miniMessages-' + userId);
+            if (!messagesDiv) return;
+            
+            if (data.success && data.messages && data.messages.length > 0) {
+                const wasAtBottom = messagesDiv.scrollHeight - messagesDiv.scrollTop <= messagesDiv.clientHeight + 50;
+                
+                messagesDiv.innerHTML = data.messages.map(function(msg) {
+                    return '<div class="mini-msg ' + (msg.isOwn ? 'own' : 'other') + '">' + escapeHtml(msg.content) + '</div>';
+                }).join('');
+                
+                if (wasAtBottom) {
+                    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                }
+            }
+        } catch (error) {
+            console.error('Error loading mini messages:', error);
+        }
+    };
+    
+    window.sendMiniMessage = async function(userId) {
+        const chatWindow = window.miniChats[userId];
+        if (!chatWindow) return;
+        
+        const input = chatWindow.querySelector('.mini-chat-input');
+        const content = input.value.trim();
+        if (!content) return;
+        
+        input.value = '';
+        
+        // Add message immediately with animation
+        const messagesDiv = document.getElementById('miniMessages-' + userId);
+        const emptyState = messagesDiv.querySelector('.mini-chat-empty');
+        if (emptyState) emptyState.remove();
+        
+        messagesDiv.innerHTML += '<div class="mini-msg own">' + escapeHtml(content) + '</div>';
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        
+        try {
+            const formData = new FormData();
+            formData.append('ReceiverId', userId);
+            formData.append('Content', content);
+            
+            await fetch('/Message/SendMessage', {
+                method: 'POST',
+                body: formData
+            });
+        } catch (error) {
+            console.error('Error sending message:', error);
+        }
+    };
+    
+    // Expose to global scope
+    window.addFriendFromSidebar = async function(userId, btn) {
+        try {
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+            
+            const response = await fetch('/Profile/SendFriendRequest', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(userId)
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                btn.innerHTML = '<i class="fa-solid fa-check"></i>';
+                btn.style.background = 'var(--lofi-muted)';
+            } else {
+                btn.innerHTML = '<i class="fa-solid fa-user-plus"></i>';
+                btn.disabled = false;
+            }
+        } catch (error) {
+            console.error('Error sending friend request:', error);
+            btn.innerHTML = '<i class="fa-solid fa-user-plus"></i>';
+            btn.disabled = false;
+        }
+    };
+})();
+</script>

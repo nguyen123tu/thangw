@@ -1,0 +1,421 @@
+@{
+    ViewData["Title"] = "Cài đặt";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["IsSettingsPage"] = true;
+}
+
+<div class="settings-container">
+    <div class="settings-card">
+        <div class="settings-header">
+            <h1><i class="fa-solid fa-gear"></i> Cài đặt tài khoản</h1>
+        </div>
+        
+        <div class="settings-body">
+            <!-- Change Name Section -->
+            <div class="settings-section">
+                <h3><i class="fa-solid fa-user"></i> Đổi tên hiển thị</h3>
+                <form id="changeNameForm">
+                    @Html.AntiForgeryToken()
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Họ</label>
+                            <input type="text" class="form-control settings-input" id="firstName" name="firstName" 
+                                   value="@ViewBag.FirstName" placeholder="Nhập họ..." required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Tên</label>
+                            <input type="text" class="form-control settings-input" id="lastName" name="lastName" 
+                                   value="@ViewBag.LastName" placeholder="Nhập tên..." required>
+                        </div>
+                    </div>
+                    <div class="settings-actions">
+                        <button type="submit" class="btn-settings-primary">
+                            <i class="fa-solid fa-check"></i> Lưu tên
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Change Password Section -->
+            <div class="settings-section">
+                <h3><i class="fa-solid fa-lock"></i> Đổi mật khẩu</h3>
+                <form id="changePasswordForm">
+                    @Html.AntiForgeryToken()
+                    <div class="mb-3">
+                        <label class="form-label">Mật khẩu hiện tại</label>
+                        <div class="password-input-wrapper">
+                            <input type="password" class="form-control settings-input" id="currentPassword" 
+                                   name="currentPassword" placeholder="Nhập mật khẩu hiện tại..." required>
+                            <button type="button" class="password-toggle" onclick="togglePassword('currentPassword')">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Mật khẩu mới</label>
+                        <div class="password-input-wrapper">
+                            <input type="password" class="form-control settings-input" id="newPassword" 
+                                   name="newPassword" placeholder="Nhập mật khẩu mới..." required minlength="6">
+                            <button type="button" class="password-toggle" onclick="togglePassword('newPassword')">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Xác nhận mật khẩu mới</label>
+                        <div class="password-input-wrapper">
+                            <input type="password" class="form-control settings-input" id="confirmPassword" 
+                                   name="confirmPassword" placeholder="Nhập lại mật khẩu mới..." required>
+                            <button type="button" class="password-toggle" onclick="togglePassword('confirmPassword')">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="settings-actions">
+                        <button type="submit" class="btn-settings-primary">
+                            <i class="fa-solid fa-key"></i> Đổi mật khẩu
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Account Info -->
+            <div class="settings-section">
+                <h3><i class="fa-solid fa-circle-info"></i> Thông tin tài khoản</h3>
+                <div class="account-info">
+                    <div class="info-row">
+                        <span class="info-label">Email:</span>
+                        <span class="info-value">@ViewBag.Email</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Username:</span>
+                        <span class="info-value">@ViewBag.Username</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Ngày tạo:</span>
+                        <span class="info-value">@ViewBag.CreatedAt</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Alert Toast -->
+<div id="settingsToast" class="settings-toast" style="display: none;">
+    <i class="toast-icon"></i>
+    <span class="toast-message"></span>
+</div>
+
+<style>
+.settings-container {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.settings-card {
+    background: var(--lofi-white);
+    border: 3px solid var(--lofi-dark);
+    border-radius: 16px;
+    box-shadow: 8px 8px 0 var(--lofi-dark);
+    overflow: hidden;
+}
+
+.settings-header {
+    background: var(--lofi-sage);
+    padding: 20px 24px;
+    border-bottom: 3px solid var(--lofi-dark);
+}
+
+.settings-header h1 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--lofi-white);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.settings-body {
+    padding: 24px;
+}
+
+.settings-section {
+    background: var(--lofi-cream);
+    border: 2px solid var(--lofi-dark);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.settings-section:last-child {
+    margin-bottom: 0;
+}
+
+.settings-section h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--lofi-dark);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 12px;
+    border-bottom: 2px dashed var(--lofi-muted);
+}
+
+.settings-section h3 i {
+    color: var(--lofi-sage);
+}
+
+.form-label {
+    font-weight: 600;
+    color: var(--lofi-dark);
+    margin-bottom: 6px;
+}
+
+.settings-input {
+    border: 2px solid var(--lofi-muted);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 15px;
+    transition: all 0.2s ease;
+}
+
+.settings-input:focus {
+    border-color: var(--lofi-sage);
+    box-shadow: 0 0 0 3px rgba(148, 175, 134, 0.2);
+    outline: none;
+}
+
+.password-input-wrapper {
+    position: relative;
+}
+
+.password-input-wrapper .settings-input {
+    padding-right: 50px;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--lofi-muted);
+    cursor: pointer;
+    padding: 4px;
+}
+
+.password-toggle:hover {
+    color: var(--lofi-sage);
+}
+
+.settings-actions {
+    margin-top: 16px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.btn-settings-primary {
+    background: var(--lofi-sage);
+    color: var(--lofi-white);
+    border: 2px solid var(--lofi-dark);
+    border-radius: 8px;
+    padding: 12px 24px;
+    font-weight: 600;
+    font-size: 15px;
+    cursor: pointer;
+    box-shadow: 3px 3px 0 var(--lofi-dark);
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-settings-primary:hover {
+    transform: translate(3px, 3px);
+    box-shadow: none;
+}
+
+.account-info {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--lofi-muted);
+}
+
+.info-row:last-child {
+    border-bottom: none;
+}
+
+.info-label {
+    font-weight: 600;
+    color: var(--lofi-muted);
+}
+
+.info-value {
+    color: var(--lofi-dark);
+    font-weight: 500;
+}
+
+/* Toast */
+.settings-toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--lofi-white);
+    border: 2px solid var(--lofi-dark);
+    border-radius: 12px;
+    padding: 16px 24px;
+    box-shadow: 4px 4px 0 var(--lofi-dark);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    z-index: 9999;
+    animation: slideIn 0.3s ease;
+}
+
+.settings-toast.success {
+    border-color: #22c55e;
+}
+
+.settings-toast.success .toast-icon {
+    color: #22c55e;
+}
+
+.settings-toast.error {
+    border-color: #ef4444;
+}
+
+.settings-toast.error .toast-icon {
+    color: #ef4444;
+}
+
+@@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+</style>
+
+<script>
+function togglePassword(inputId) {
+    const input = document.getElementById(inputId);
+    const icon = input.parentElement.querySelector('.password-toggle i');
+    
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+    } else {
+        input.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+    }
+}
+
+function showToast(message, type) {
+    const toast = document.getElementById('settingsToast');
+    const icon = toast.querySelector('.toast-icon');
+    const msg = toast.querySelector('.toast-message');
+    
+    toast.className = 'settings-toast ' + type;
+    icon.className = 'toast-icon fa-solid ' + (type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle');
+    msg.textContent = message;
+    toast.style.display = 'flex';
+    
+    setTimeout(function() {
+        toast.style.display = 'none';
+    }, 3000);
+}
+
+// Change Name Form
+document.getElementById('changeNameForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const firstName = document.getElementById('firstName').value.trim();
+    const lastName = document.getElementById('lastName').value.trim();
+    
+    if (!firstName || !lastName) {
+        showToast('Vui lòng nhập đầy đủ họ và tên', 'error');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/Home/ChangeName', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+            },
+            body: JSON.stringify({ firstName, lastName })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showToast('Đã cập nhật tên thành công!', 'success');
+        } else {
+            showToast(result.message || 'Không thể cập nhật tên', 'error');
+        }
+    } catch (error) {
+        showToast('Đã xảy ra lỗi', 'error');
+    }
+});
+
+// Change Password Form
+document.getElementById('changePasswordForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const currentPassword = document.getElementById('currentPassword').value;
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    
+    if (newPassword !== confirmPassword) {
+        showToast('Mật khẩu xác nhận không khớp', 'error');
+        return;
+    }
+    
+    if (newPassword.length < 6) {
+        showToast('Mật khẩu mới phải có ít nhất 6 ký tự', 'error');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/Home/ChangePassword', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+            },
+            body: JSON.stringify({ currentPassword, newPassword })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showToast('Đã đổi mật khẩu thành công!', 'success');
+            document.getElementById('changePasswordForm').reset();
+        } else {
+            showToast(result.message || 'Không thể đổi mật khẩu', 'error');
+        }
+    } catch (error) {
+        showToast('Đã xảy ra lỗi', 'error');
+    }
+});
+</script>

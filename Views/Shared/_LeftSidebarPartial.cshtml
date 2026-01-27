@@ -1,0 +1,63 @@
+<aside class="layout-left">
+    @if (User?.Identity?.IsAuthenticated ?? false)
+    {
+        var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+        var userName = User.Identity.Name ?? "User";
+        var userFullName = ViewBag.CurrentUserFullName as string ?? userName;
+        var userAvatar = ViewBag.CurrentUserAvatar as string ?? "/assets/user.png";
+        
+        <a href="/Profile" class="sidebar-profile-button">
+            <img src="@userAvatar" alt="@userFullName" class="sidebar-profile-button-avatar header-user-avatar" />
+            <span class="sidebar-profile-button-name header-user-name">@userFullName</span>
+        </a>
+    }
+    else
+    {
+        <a href="/Home/Login" class="sidebar-profile-button header-user-btn">
+            <img src="/assets/user.png" alt="User" class="sidebar-profile-button-avatar header-user-avatar" />
+            <span class="sidebar-profile-button-name header-user-name">Đăng nhập</span>
+        </a>
+    }
+    
+    <nav class="nav-menu">
+        <a href="/" class="nav-item active">
+            <i class="fas fa-home"></i>
+            <span>Trang chủ</span>
+        </a>
+        
+        <a href="#" class="nav-item">
+            <i class="fas fa-compass"></i>
+            <span>Khám phá</span>
+        </a>
+        
+        <a href="#" class="nav-item">
+            <i class="fas fa-bell"></i>
+            <span>Thông báo</span>
+        </a>
+        
+        <a href="#" class="nav-item">
+            <i class="fas fa-envelope"></i>
+            <span>Tin nhắn</span>
+        </a>
+        
+        <a href="#" class="nav-item">
+            <i class="fas fa-bookmark"></i>
+            <span>Đã lưu</span>
+        </a>
+        
+        <a href="/Profile" class="nav-item">
+            <i class="fas fa-user"></i>
+            <span>Hồ sơ</span>
+        </a>
+        
+        <a href="#" class="nav-item">
+            <i class="fas fa-users"></i>
+            <span>Nhóm</span>
+        </a>
+        
+        <a href="#" class="nav-item">
+            <i class="fas fa-cog"></i>
+            <span>Cài đặt</span>
+        </a>
+    </nav>
+</aside>

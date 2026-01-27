@@ -1,0 +1,25 @@
+@{
+    ViewData["Title"] = "Liên kết MSSV";
+}
+
+<div style="max-width: 400px; margin: 40px auto;">
+    <section class="card glass login-card" id="linkMssvCard">
+        <div class="card-title">Liên kết MSSV</div>
+        <div class="card-sub">Kết nối tài khoản trường để đồng bộ thông tin.</div>
+
+        <form class="form" asp-action="LinkMssv" method="post">
+            <label class="field">
+                <div class="label">Mã số sinh viên</div>
+                <input name="mssv" class="input" type="text" placeholder="Nhập MSSV" required />
+            </label>
+            <label class="field">
+                <div class="label">Mật khẩu Portal</div>
+                <input name="portalPassword" class="input" type="password" placeholder="Mật khẩu cổng thông tin" required />
+            </label>
+            <div class="actions">
+                <button class="btn primary" type="submit">Liên kết</button>
+                <a asp-action="Index" class="btn soft">Bỏ qua</a>
+            </div>
+        </form>
+    </section>
+</div>

@@ -1,0 +1,376 @@
+@* Story Rail - With Video Support *@
+<section class="story-rail">
+    <h3 class="story-rail-title">Stories</h3>
+    <div class="story-list" id="story-container">
+        <!-- Add Story Button -->
+        <div class="story-item add-story-item" onclick="openStoryUpload()">
+            <div class="story-avatar add-story">
+                <i class="fas fa-plus"></i>
+            </div>
+            <span class="story-name">Thêm Story</span>
+        </div>
+
+        <!-- Stories will be loaded dynamically -->
+        <div class="story-loading" id="storyLoading">
+            <i class="fa-solid fa-spinner fa-spin"></i>
+        </div>
+    </div>
+</section>
+
+<!-- Story Upload Modal -->
+<div class="modal fade" id="storyUploadModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content story-upload-modal">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fa-solid fa-plus-circle"></i> Tạo Story mới</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="story-upload-area" id="storyUploadArea">
+                    <input type="file" id="storyFileInput" accept="image/*,video/*" style="display: none;">
+                    <div class="upload-placeholder" onclick="document.getElementById('storyFileInput').click()">
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                        <p>Chọn ảnh hoặc video</p>
+                        <span>Ảnh: JPG, PNG, GIF (max 10MB)</span>
+                        <span>Video: MP4, WebM (max 50MB)</span>
+                    </div>
+                    <div class="upload-preview" id="storyPreview" style="display: none;">
+                        <img id="storyPreviewImg" src="" alt="Preview" style="display: none;">
+                        <video id="storyPreviewVideo" controls style="display: none;"></video>
+                        <button class="btn-remove-preview" onclick="clearStoryPreview()">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="story-caption-input">
+                    <input type="text" id="storyCaptionInput" placeholder="Thêm chú thích (tùy chọn)" maxlength="200">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-primary" id="submitStoryBtn" onclick="submitStory()" disabled>
+                    <i class="fa-solid fa-paper-plane"></i> Đăng Story
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.story-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    color: var(--lofi-muted);
+}
+
+.story-item {
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.story-item:hover {
+}
+
+.story-item.has-video .story-avatar::after {
+ 
+}
+
+.story-item.has-video .story-avatar::before {
+   
+}
+
+/* Story Upload Modal */
+.story-upload-modal {
+    border: 2px solid var(--lofi-dark);
+    border-radius: 16px;
+    box-shadow: 4px 4px 0 var(--lofi-dark);
+}
+
+.story-upload-modal .modal-header {
+    border-bottom: 2px solid var(--lofi-dark);
+    background: var(--lofi-cream);
+}
+
+.story-upload-modal .modal-title {
+    font-weight: 700;
+    color: var(--lofi-dark);
+}
+
+.story-upload-area {
+    border: 2px dashed var(--lofi-dark);
+    border-radius: 12px;
+    min-height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    background: var(--lofi-cream);
+}
+
+.upload-placeholder {
+    text-align: center;
+    cursor: pointer;
+    padding: 40px;
+}
+
+.upload-placeholder i {
+    font-size: 48px;
+    color: var(--lofi-sage);
+    margin-bottom: 16px;
+}
+
+.upload-placeholder p {
+    font-weight: 600;
+    color: var(--lofi-dark);
+    margin-bottom: 8px;
+}
+
+.upload-placeholder span {
+    display: block;
+    font-size: 12px;
+    color: var(--lofi-muted);
+}
+
+.upload-preview {
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+.upload-preview img,
+.upload-preview video {
+    width: 100%;
+    height: 300px;
+    object-fit: contain;
+    background: #000;
+}
+
+.btn-remove-preview {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.6);
+    border: none;
+    color: white;
+    cursor: pointer;
+}
+
+.story-caption-input {
+    margin-top: 16px;
+}
+
+.story-caption-input input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid var(--lofi-dark);
+    border-radius: 8px;
+    font-size: 14px;
+    background: var(--lofi-white);
+}
+
+.story-upload-modal .modal-footer {
+    border-top: 2px solid var(--lofi-dark);
+    background: var(--lofi-cream);
+}
+
+.story-upload-modal .btn-primary {
+    background: var(--lofi-sage);
+    border: 2px solid var(--lofi-dark);
+    color: white;
+    font-weight: 600;
+    box-shadow: 2px 2px 0 var(--lofi-dark);
+}
+
+.story-upload-modal .btn-secondary {
+    background: var(--lofi-white);
+    border: 2px solid var(--lofi-dark);
+    color: var(--lofi-dark);
+    font-weight: 600;
+}
+
+.no-stories-msg {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 16px;
+    color: var(--lofi-muted);
+    font-size: 13px;
+}
+</style>
+
+<script>
+(function() {
+    'use strict';
+    
+    let selectedFile = null;
+
+    // Load stories on page load
+    document.addEventListener('DOMContentLoaded', loadStories);
+
+    async function loadStories() {
+        const container = document.getElementById('story-container');
+        const loading = document.getElementById('storyLoading');
+        
+        try {
+            const response = await fetch('/Story/GetStories');
+            const data = await response.json();
+            
+            if (loading) loading.remove();
+            
+            if (data.success && data.stories && data.stories.length > 0) {
+                data.stories.forEach(story => {
+                    const storyItem = document.createElement('a');
+                    storyItem.href = '/Story/View/' + story.storyId;
+                    storyItem.className = 'story-item' + (story.mediaType === 'video' ? ' has-video' : '');
+                    storyItem.innerHTML = `
+                        <div class="story-avatar ${story.isOwn ? 'own-story' : ''}">
+                            <img src="${story.avatar}" alt="${story.userName}">
+                        </div>
+                        <span class="story-name">${escapeHtml(story.userName)}</span>
+                    `;
+                    container.appendChild(storyItem);
+                });
+            } else {
+                const noStories = document.createElement('div');
+                noStories.className = 'no-stories-msg';
+                noStories.innerHTML = '<i class="fa-solid fa-circle-info"></i><span>Chưa có story mới</span>';
+                container.appendChild(noStories);
+            }
+        } catch (error) {
+            console.error('Error loading stories:', error);
+            if (loading) loading.remove();
+        }
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    // Story upload functions
+    window.openStoryUpload = function() {
+        const modal = new bootstrap.Modal(document.getElementById('storyUploadModal'));
+        modal.show();
+    };
+
+    const fileInput = document.getElementById('storyFileInput');
+    if (fileInput) {
+        fileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const isImage = file.type.startsWith('image/');
+            const isVideo = file.type.startsWith('video/');
+
+            if (!isImage && !isVideo) {
+                alert('Chỉ chấp nhận file ảnh hoặc video');
+                return;
+            }
+
+            const maxSize = isVideo ? 50 * 1024 * 1024 : 10 * 1024 * 1024;
+            if (file.size > maxSize) {
+                alert(isVideo ? 'Video không được vượt quá 50MB' : 'Ảnh không được vượt quá 10MB');
+                return;
+            }
+
+            selectedFile = file;
+            showPreview(file, isVideo);
+        });
+    }
+
+    function showPreview(file, isVideo) {
+        const preview = document.getElementById('storyPreview');
+        const placeholder = document.querySelector('.upload-placeholder');
+        const imgPreview = document.getElementById('storyPreviewImg');
+        const videoPreview = document.getElementById('storyPreviewVideo');
+        const submitBtn = document.getElementById('submitStoryBtn');
+
+        placeholder.style.display = 'none';
+        preview.style.display = 'block';
+
+        const url = URL.createObjectURL(file);
+
+        if (isVideo) {
+            imgPreview.style.display = 'none';
+            videoPreview.style.display = 'block';
+            videoPreview.src = url;
+        } else {
+            videoPreview.style.display = 'none';
+            imgPreview.style.display = 'block';
+            imgPreview.src = url;
+        }
+
+        submitBtn.disabled = false;
+    }
+
+    window.clearStoryPreview = function() {
+        const preview = document.getElementById('storyPreview');
+        const placeholder = document.querySelector('.upload-placeholder');
+        const imgPreview = document.getElementById('storyPreviewImg');
+        const videoPreview = document.getElementById('storyPreviewVideo');
+        const submitBtn = document.getElementById('submitStoryBtn');
+        const fileInput = document.getElementById('storyFileInput');
+
+        preview.style.display = 'none';
+        placeholder.style.display = 'block';
+        imgPreview.src = '';
+        videoPreview.src = '';
+        fileInput.value = '';
+        submitBtn.disabled = true;
+        selectedFile = null;
+    };
+
+    window.submitStory = async function() {
+        if (!selectedFile) return;
+
+        const submitBtn = document.getElementById('submitStoryBtn');
+        const caption = document.getElementById('storyCaptionInput').value;
+
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang đăng...';
+
+        const formData = new FormData();
+        formData.append('file', selectedFile);
+        formData.append('caption', caption);
+
+        try {
+            const response = await fetch('/Story/Create', {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                // Close modal and reload stories
+                bootstrap.Modal.getInstance(document.getElementById('storyUploadModal')).hide();
+                clearStoryPreview();
+                document.getElementById('storyCaptionInput').value = '';
+                
+                // Reload stories
+                const container = document.getElementById('story-container');
+                const addBtn = container.querySelector('.add-story-item');
+                container.innerHTML = '';
+                container.appendChild(addBtn);
+                container.innerHTML += '<div class="story-loading" id="storyLoading"><i class="fa-solid fa-spinner fa-spin"></i></div>';
+                loadStories();
+            } else {
+                alert(data.message || 'Đã xảy ra lỗi');
+            }
+        } catch (error) {
+            console.error('Error creating story:', error);
+            alert('Đã xảy ra lỗi');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Đăng Story';
+        }
+    };
+})();
+</script>

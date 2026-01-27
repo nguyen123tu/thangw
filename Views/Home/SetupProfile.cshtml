@@ -1,0 +1,603 @@
+@model MTU.Models.DTOs.SetupProfileDto
+@{
+    ViewData["Title"] = "Hoàn tất hồ sơ";
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hoàn tất hồ sơ - MTU Social</title>
+    <link rel="stylesheet" href="~/css/variables.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/auth.css" asp-append-version="true" />
+    <style>
+        .auth-card {
+            max-width: 550px;
+        }
+        .setup-steps {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+        .step-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--lofi-muted);
+            border: 2px solid var(--lofi-dark);
+            transition: all 0.3s ease;
+        }
+        .step-dot.active {
+            background: var(--lofi-sage);
+            transform: scale(1.2);
+        }
+        .step-dot.completed {
+            background: var(--lofi-dark);
+        }
+        .step-content {
+            display: none;
+        }
+        .step-content.active {
+            display: block;
+        }
+        .auth-row {
+            display: flex;
+            gap: 16px;
+        }
+        .auth-row .auth-field {
+            flex: 1;
+        }
+        .auth-textarea {
+            width: 100%;
+            padding: 14px 16px;
+            background: var(--lofi-white);
+            border: 3px solid var(--lofi-dark);
+            border-radius: 15px;
+            box-shadow: 4px 4px 0 var(--lofi-dark);
+            font-size: 16px;
+            color: var(--lofi-dark);
+            transition: var(--transition-smooth);
+            font-family: inherit;
+            resize: none;
+            min-height: 80px;
+        }
+        .auth-textarea:focus {
+            outline: none;
+            border-color: var(--lofi-sage);
+            transform: translateY(2px);
+            box-shadow: 2px 2px 0 var(--lofi-dark);
+        }
+        .auth-select {
+            width: 100%;
+            padding: 14px 16px;
+            background: var(--lofi-white);
+            border: 3px solid var(--lofi-dark);
+            border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+            box-shadow: 4px 4px 0 var(--lofi-dark);
+            font-size: 16px;
+            color: var(--lofi-dark);
+            font-family: inherit;
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+        }
+        .auth-select:focus {
+            outline: none;
+            border-color: var(--lofi-sage);
+        }
+        .required-mark {
+            color: #dc3545;
+        }
+        .optional-text {
+            font-weight: 400;
+            color: var(--lofi-muted);
+            font-size: 12px;
+            margin-left: 6px;
+        }
+        .btn-row {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+        .btn-row .auth-btn {
+            flex: 1;
+            margin-top: 0;
+        }
+        .auth-btn-outline {
+            width: 100%;
+            padding: 16px;
+            background: var(--lofi-white);
+            border: 3px solid var(--lofi-dark);
+            border-radius: 15px 225px 15px 255px / 255px 15px 225px 15px;
+            box-shadow: 6px 6px 0 var(--lofi-dark);
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--lofi-dark);
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            font-family: inherit;
+        }
+        .auth-btn-outline:hover {
+            transform: translateY(4px);
+            box-shadow: 2px 2px 0 var(--lofi-dark);
+            background: var(--lofi-cream);
+        }
+        /* Interests Grid */
+        .interests-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 8px;
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 4px;
+        }
+        .interest-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 12px;
+            background: var(--lofi-white);
+            border: 2px solid var(--lofi-dark);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 13px;
+        }
+        .interest-item:hover {
+            background: var(--lofi-cream);
+        }
+        .interest-item.selected {
+            background: var(--lofi-sage);
+            border-color: var(--lofi-dark);
+        }
+        .interest-item input {
+            display: none;
+        }
+        .interest-item i {
+            font-size: 16px;
+            color: var(--lofi-dark);
+        }
+        /* Autocomplete Suggestions */
+        .suggestions-dropdown {
+            position: absolute;
+            background: var(--lofi-white);
+            border: 3px solid var(--lofi-dark);
+            border-radius: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+            width: calc(100% - 6px);
+            margin-top: 4px;
+            box-shadow: 4px 4px 0 var(--lofi-dark);
+        }
+        .suggestions-dropdown.show {
+            display: block;
+        }
+        .suggestion-item {
+            padding: 10px 14px;
+            cursor: pointer;
+            border-bottom: 1px solid var(--lofi-cream);
+            transition: background 0.2s ease;
+        }
+        .suggestion-item:hover {
+            background: var(--lofi-sage);
+        }
+        .suggestion-item:last-child {
+            border-bottom: none;
+        }
+        .auth-field {
+            position: relative;
+        }
+        /* Image Upload */
+        .upload-area {
+            border: 3px dashed var(--lofi-dark);
+            border-radius: 15px;
+            padding: 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: var(--lofi-cream);
+        }
+        .upload-area:hover {
+            background: var(--lofi-white);
+            border-style: solid;
+        }
+        .upload-area i {
+            font-size: 32px;
+            color: var(--lofi-muted);
+            margin-bottom: 8px;
+        }
+        .upload-area p {
+            margin: 0;
+            color: var(--lofi-muted);
+            font-size: 14px;
+        }
+        .upload-area input {
+            display: none;
+        }
+        .upload-preview {
+            max-width: 100%;
+            max-height: 150px;
+            border-radius: 8px;
+            margin-top: 12px;
+            display: none;
+        }
+        .avatar-upload {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            margin: 0 auto;
+            overflow: hidden;
+        }
+        .avatar-upload .upload-area {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            border-radius: 50%;
+            padding: 12px;
+        }
+        .avatar-upload .upload-preview {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+            margin-top: 0;
+        }
+        @@media (max-width: 500px) {
+            .auth-row, .interests-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .auth-row {
+                flex-direction: column;
+                gap: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-card">
+            <h1 class="auth-title">Chào bạn đến với MTU</h1>
+            <p class="auth-subtitle">Hoàn tất những điều cần thiết nhé</p>
+
+            <div class="setup-steps">
+                <div class="step-dot active" data-step="1"></div>
+                <div class="step-dot" data-step="2"></div>
+                <div class="step-dot" data-step="3"></div>
+            </div>
+
+            <form asp-action="SetupProfile" method="post" enctype="multipart/form-data" id="setupForm">
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                <div class="step-content active" data-step="1">
+                    <div class="auth-row">
+                        <div class="auth-field">
+                            <label>Họ <span class="required-mark">*</span></label>
+                            <input asp-for="FirstName" class="auth-input" placeholder="Nguyen" />
+                            <span asp-validation-for="FirstName" class="text-danger"></span>
+                        </div>
+                        <div class="auth-field">
+                            <label>Tên <span class="required-mark">*</span></label>
+                            <input asp-for="LastName" class="auth-input" placeholder="Van A" />
+                            <span asp-validation-for="LastName" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="auth-row">
+                        <div class="auth-field">
+                            <label>Giới tính</label>
+                            <select asp-for="Gender" class="auth-select">
+                                <option value="">-- Chọn --</option>
+                                <option value="Nam">Nam</option>
+                                <option value="Nữ">Nữ</option>
+                                <option value="Khác">Khác</option>
+                            </select>
+                        </div>
+                        <div class="auth-field">
+                            <label>Ngày sinh</label>
+                            <input asp-for="DateOfBirth" type="date" class="auth-input" />
+                        </div>
+                    </div>
+
+                    <div class="auth-field">
+                        <label>Nơi sinh sống</label>
+                        <input type="text" id="locationInput" class="auth-input" placeholder="Nhập tên tỉnh thành..." autocomplete="off" />
+                        <input type="hidden" asp-for="Location" id="locationHidden" />
+                        <div id="locationSuggestions" class="suggestions-dropdown"></div>
+                    </div>
+
+                    <button type="button" class="auth-btn" onclick="nextStep(2)">Tiep tuc</button>
+                </div>
+
+                <div class="step-content" data-step="2">
+                    <div class="auth-row">
+                        <div class="auth-field">
+                            <label>Khoa <span class="optional-text">(Tuy chon)</span></label>
+                            <select asp-for="Faculty" class="auth-select">
+                                <option value="">-- Chon khoa --</option>
+                                <option value="Ky thuat phan mem">Kỹ thuật phần mềm </option>
+                                <option value="Cong nghe thong tin">Chưa có</option>
+                                <option value="Khoa hoc may tinh">Chưa có</option>
+                                <option value="He thong thong tin">Chưa có</option>
+                                <option value="Mang may tinh">Chưa có</option>
+                                <option value="Kinh te">Chưa có</option>
+                                <option value="Ngoai ngu">Chưa có</option>
+                            </select>
+                        </div>
+                        <div class="auth-field">
+                            <label>Niên Khóa <span class="optional-text">(Tùy chọn)</span></label>
+                            <select asp-for="AcademicYear" class="auth-select">
+                                <option value="">-- Chọn --</option>
+                                <option value="KP21">KP21 (2021)</option>
+                                <option value="KP22">KP22 (2022)</option>
+                                <option value="KP23">KP23 (2023)</option>
+                                <option value="KP24">KP24 (2024)</option>
+                                <option value="KP25">KP25 (2025)</option>
+                                <option value="KP26">KP26 (2026)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="auth-field">
+                        <label>Sở thích <span class="optional-text">(Chọn nhiều)</span></label>
+                        <div class="interests-grid" id="interestsGrid">
+                        </div>
+                        <input type="hidden" asp-for="Interests" id="interestsInput" />
+                    </div>
+
+                    <div class="btn-row">
+                        <button type="button" class="auth-btn-outline" onclick="prevStep(1)">Quay lại</button>
+                        <button type="button" class="auth-btn" onclick="nextStep(3)">Tiếp tục nào</button>
+                    </div>
+                    <button type="button" class="auth-btn-outline" style="margin-top:12px;width:100%" onclick="skipToEnd()">Bo qua</button>
+                </div>
+
+                <div class="step-content" data-step="3">
+                    <div class="auth-field" style="text-align:center">
+                        <label>Ảnh đại diện<span class="optional-text">(Tuy chon)</span></label>
+                        <div class="avatar-upload">
+                            <label class="upload-area" for="avatarInput">
+                                <i class="fas fa-user"></i>
+                                <p>Chọn ảnh</p>
+                                <input type="file" id="avatarInput" name="AvatarFile" accept="image/*" onchange="previewImage(this, 'avatarPreview')">
+                                <img id="avatarPreview" class="upload-preview" alt="Preview">
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="auth-field">
+                        <label>Ảnh bìa "Tạm ẩn"<span class="optional-text">(Tuy chon)</span></label>
+                        <label class="upload-area" for="coverInput">
+                            <i class="fas fa-image"></i>
+                            <p>Chọn ảnh</p>
+                            <input type="file" id="coverInput" name="CoverImageFile" accept="image/*" onchange="previewImage(this, 'coverPreview')">
+                            <img id="coverPreview" class="upload-preview" alt="Preview">
+                        </label>
+                    </div>
+
+                    <div class="auth-field">
+                        <label>Tiểu sử<span class="optional-text">(Tuy chon)</span></label>
+                        <textarea asp-for="Bio" class="auth-textarea" placeholder="Viet vai dong ve ban than..."></textarea>
+                    </div>
+
+                    <div class="btn-row">
+                        <button type="button" class="auth-btn-outline" onclick="prevStep(2)">Quay lại</button>
+                        <button type="submit" class="auth-btn">Hoàn tất</button>
+                    </div>
+                    <button type="button" class="auth-btn-outline" style="margin-top:12px;width:100%" onclick="skipToEnd()">Bo qua</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 1;
+
+        const provinces = [
+            "Lai Châu", "Điện Biên", "Sơn La", "Lang Sơn", "Quảng Ninh",
+            "Thanh Hóa", "Nghệ An", "Hà Tĩnh", "Cao Bằng", "Tuyên Quang",
+            "Lào Cai", "Thái Nguyên", "Phú Thọ", "Bắc Ninh", "Hưng Yên",
+            "Ninh Bình", "Quảng Trị", "Quảng Ngãi", "Gia Lai", "Khánh Hòa",
+            "Lâm Đồng", "Đắk Lắk", "Đồng Nai", "Tây Ninh", "Vĩnh Long",
+            "Đồng Tháp", "Cà Mau", "An Giang"
+        ];
+
+        const interests = [
+            { name: "Đọc sách", icon: "fa-book" },
+            { name: "Âm nhạc", icon: "fa-music" },
+            { name: "Thể thao", icon: "fa-futbol" },
+            { name: "Du lịch", icon: "fa-plane" },
+            { name: "Phim ảnh", icon: "fa-film" },
+            { name: "Game", icon: "fa-gamepad" },
+            { name: "Nấu ăn", icon: "fa-utensils" },
+            { name: "Nhiếp ảnh", icon: "fa-camera" },
+            { name: "Lập trình", icon: "fa-code" },
+            { name: "Vẽ tranh", icon: "fa-palette" },
+            { name: "Viết lách", icon: "fa-pen" },
+            { name: "Yoga", icon: "fa-spa" },
+            { name: "Gym", icon: "fa-dumbbell" },
+            { name: "Bơi lội", icon: "fa-swimmer" },
+            { name: "Chạy bộ", icon: "fa-running" },
+            { name: "Đạp xe", icon: "fa-bicycle" },
+            { name: "Leo núi", icon: "fa-mountain" },
+            { name: "Cắm trại", icon: "fa-campground" },
+            { name: "Câu cá", icon: "fa-fish" },
+            { name: "Làm vườn", icon: "fa-seedling" },
+            { name: "Thời trang", icon: "fa-tshirt" },
+            { name: "Mua sắm", icon: "fa-shopping-bag" },
+            { name: "Cafe", icon: "fa-coffee" },
+            { name: "Trà đạo", icon: "fa-mug-hot" },
+            { name: "Thiền", icon: "fa-om" },
+            { name: "Nhảy múa", icon: "fa-person-dancing" },
+            { name: "Hát karaoke", icon: "fa-microphone" },
+            { name: "Chơi nhạc cụ", icon: "fa-guitar" },
+            { name: "Xem bóng đá", icon: "fa-futbol" },
+            { name: "Cờ vua", icon: "fa-chess" },
+            { name: "Bida", icon: "fa-circle" },
+            { name: "Bowling", icon: "fa-bowling-ball" },
+            { name: "Bóng bàn", icon: "fa-table-tennis" },
+            { name: "Cầu lông", icon: "fa-shuttlecock" },
+            { name: "Võ thuật", icon: "fa-hand-fist" },
+            { name: "Thiết kế", icon: "fa-pen-ruler" },
+            { name: "Kiến trúc", icon: "fa-building" },
+            { name: "Khoa học", icon: "fa-flask" },
+            { name: "Thiên văn", icon: "fa-moon" },
+            { name: "Động vật", icon: "fa-paw" },
+            { name: "Thú cưng", icon: "fa-dog" },
+            { name: "Xe cộ", icon: "fa-car" },
+            { name: "Công nghệ", icon: "fa-microchip" },
+            { name: "Điện thoại", icon: "fa-mobile" },
+            { name: "Máy tính", icon: "fa-laptop" },
+            { name: "AI", icon: "fa-robot" },
+            { name: "Blockchain", icon: "fa-link" },
+            { name: "Đầu tư", icon: "fa-chart-line" },
+            { name: "Kinh doanh", icon: "fa-briefcase" },
+            { name: "Marketing", icon: "fa-bullhorn" },
+            { name: "Ngoại ngữ", icon: "fa-language" },
+            { name: "Lịch sử", icon: "fa-landmark" },
+            { name: "Địa lý", icon: "fa-globe" },
+            { name: "Triết học", icon: "fa-brain" },
+            { name: "Tâm lý học", icon: "fa-head-side-virus" },
+            { name: "Y học", icon: "fa-stethoscope" },
+            { name: "Dược học", icon: "fa-pills" },
+            { name: "Làm đẹp", icon: "fa-spa" },
+            { name: "Chăm sóc da", icon: "fa-hand-sparkles" }
+        ];
+
+        function initInterests() {
+            const grid = document.getElementById('interestsGrid');
+            interests.forEach(interest => {
+                const label = document.createElement('label');
+                label.className = 'interest-item';
+                label.innerHTML = `
+                    <input type="checkbox" value="${interest.name}" onchange="updateInterests()">
+                    <i class="fas ${interest.icon}"></i> ${interest.name}
+                `;
+                grid.appendChild(label);
+            });
+        }
+
+        const locationInput = document.getElementById('locationInput');
+        const locationHidden = document.getElementById('locationHidden');
+        const locationSuggestions = document.getElementById('locationSuggestions');
+
+        locationInput.addEventListener('input', function() {
+            const query = this.value.toLowerCase().trim();
+            
+            if (query.length === 0) {
+                locationSuggestions.classList.remove('show');
+                return;
+            }
+
+            const filtered = provinces.filter(p => 
+                p.toLowerCase().includes(query) || 
+                removeVietnameseTones(p.toLowerCase()).includes(removeVietnameseTones(query))
+            );
+
+            if (filtered.length > 0) {
+                locationSuggestions.innerHTML = filtered.map(p => 
+                    `<div class="suggestion-item" onclick="selectLocation('${p}')">${p}</div>`
+                ).join('');
+                locationSuggestions.classList.add('show');
+            } else {
+                locationSuggestions.classList.remove('show');
+            }
+        });
+
+        locationInput.addEventListener('blur', function() {
+            setTimeout(() => locationSuggestions.classList.remove('show'), 200);
+        });
+
+        function selectLocation(province) {
+            locationInput.value = province;
+            locationHidden.value = province;
+            locationSuggestions.classList.remove('show');
+        }
+
+        function removeVietnameseTones(str) {
+            return str.normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .replace(/đ/g, 'd')
+                .replace(/Đ/g, 'D');
+        }
+
+        function nextStep(step) {
+            if (currentStep === 1) {
+                const firstName = document.querySelector('[name="FirstName"]').value.trim();
+                const lastName = document.querySelector('[name="LastName"]').value.trim();
+                if (!firstName || !lastName) {
+                    alert('Vui lòng nhập họ và tên');
+                    return;
+                }
+            }
+            goToStep(step);
+        }
+
+        function prevStep(step) {
+            goToStep(step);
+        }
+
+        function goToStep(step) {
+            document.querySelectorAll('.step-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.step-dot').forEach(el => {
+                el.classList.remove('active');
+                if (parseInt(el.dataset.step) < step) {
+                    el.classList.add('completed');
+                } else {
+                    el.classList.remove('completed');
+                }
+            });
+
+            document.querySelector(`.step-content[data-step="${step}"]`).classList.add('active');
+            document.querySelector(`.step-dot[data-step="${step}"]`).classList.add('active');
+            currentStep = step;
+        }
+
+        function skipToEnd() {
+            document.getElementById('setupForm').submit();
+        }
+
+        function updateInterests() {
+            const checked = document.querySelectorAll('.interests-grid input:checked');
+            const values = Array.from(checked).map(cb => cb.value);
+            document.getElementById('interestsInput').value = values.join(', ');
+
+            document.querySelectorAll('.interest-item').forEach(item => {
+                const cb = item.querySelector('input');
+                if (cb.checked) {
+                    item.classList.add('selected');
+                } else {
+                    item.classList.remove('selected');
+                }
+            });
+        }
+
+        function previewImage(input, previewId) {
+            const preview = document.getElementById(previewId);
+            const uploadArea = input.closest('.upload-area');
+            
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                    uploadArea.querySelector('i').style.display = 'none';
+                    uploadArea.querySelector('p').style.display = 'none';
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            initInterests();
+        });
+    </script>
+</body>
+</html>

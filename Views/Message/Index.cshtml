@@ -1,0 +1,326 @@
+@{
+    ViewData["Title"] = "Tin nhắn";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="messages-container">
+    <div class="messages-sidebar">
+        <div class="messages-header">
+            <h2><i class="fa-solid fa-comments"></i> Tin nhắn</h2>
+            <button class="btn-new-message" title="Tin nhắn mới">
+                <i class="fa-solid fa-pen-to-square"></i>
+            </button>
+        </div>
+        
+        <div class="messages-search">
+            <i class="fa-solid fa-search"></i>
+            <input type="text" placeholder="Tìm kiếm tin nhắn..." id="searchMessages">
+        </div>
+        
+        <div class="conversations-list" id="conversationsList">
+            <div class="loading-state">
+                <i class="fa-solid fa-spinner fa-spin"></i>
+                <p>Đang tải...</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="messages-main">
+        <div class="no-conversation-selected">
+            <i class="fa-solid fa-comments"></i>
+            <h3>Chọn một cuộc trò chuyện</h3>
+            <p>Chọn một cuộc trò chuyện từ danh sách bên trái để bắt đầu nhắn tin</p>
+        </div>
+    </div>
+</div>
+
+<style>
+.messages-container {
+    display: grid;
+    grid-template-columns: 360px 1fr;
+    height: calc(100vh - 60px);
+    background: var(--lofi-cream);
+}
+
+.messages-sidebar {
+    background: var(--lofi-white);
+    border-right: 2px solid var(--lofi-dark);
+    display: flex;
+    flex-direction: column;
+}
+
+.messages-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px;
+    border-bottom: 2px solid var(--lofi-dark);
+}
+
+.messages-header h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--lofi-dark);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.btn-new-message {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--lofi-sage);
+    border: 2px solid var(--lofi-dark);
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 2px 2px 0 var(--lofi-dark);
+    transition: all 0.2s ease;
+}
+
+.btn-new-message:hover {
+    transform: translate(2px, 2px);
+    box-shadow: none;
+}
+
+.messages-search {
+    padding: 16px 20px;
+    border-bottom: 2px solid var(--lofi-dark);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--lofi-cream);
+}
+
+.messages-search i {
+    color: var(--lofi-muted);
+}
+
+.messages-search input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-size: 14px;
+    outline: none;
+    color: var(--lofi-dark);
+}
+
+.conversations-list {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.conversation-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-bottom: 1px solid var(--lofi-cream);
+}
+
+.conversation-item:hover {
+    background: var(--lofi-cream);
+}
+
+.conversation-item.active {
+    background: var(--lofi-sage);
+    color: white;
+}
+
+.conversation-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: 2px solid var(--lofi-dark);
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.conversation-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.conversation-name {
+    font-weight: 600;
+    font-size: 15px;
+    margin-bottom: 4px;
+}
+
+.conversation-preview {
+    font-size: 13px;
+    color: var(--lofi-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.conversation-item.active .conversation-preview {
+    color: rgba(255,255,255,0.8);
+}
+
+.conversation-meta {
+    text-align: right;
+    flex-shrink: 0;
+}
+
+.conversation-time {
+    font-size: 12px;
+    color: var(--lofi-muted);
+}
+
+.conversation-item.active .conversation-time {
+    color: rgba(255,255,255,0.8);
+}
+
+.unread-badge {
+    width: 20px;
+    height: 20px;
+    background: var(--lofi-sage);
+    border-radius: 50%;
+    font-size: 11px;
+    font-weight: 700;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 4px;
+    margin-left: auto;
+}
+
+.messages-main {
+    display: flex;
+    flex-direction: column;
+}
+
+.no-conversation-selected {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--lofi-muted);
+    text-align: center;
+    padding: 40px;
+}
+
+.no-conversation-selected i {
+    font-size: 64px;
+    margin-bottom: 20px;
+    opacity: 0.5;
+}
+
+.no-conversation-selected h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--lofi-dark);
+}
+
+.loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    color: var(--lofi-muted);
+}
+
+.loading-state i {
+    font-size: 24px;
+    margin-bottom: 12px;
+}
+
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    color: var(--lofi-muted);
+    text-align: center;
+}
+
+.empty-state i {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+
+@@media (max-width: 768px) {
+    .messages-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .messages-main {
+        display: none;
+    }
+    
+    .messages-container.chat-open .messages-sidebar {
+        display: none;
+    }
+    
+    .messages-container.chat-open .messages-main {
+        display: flex;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    loadConversations();
+});
+
+async function loadConversations() {
+    const list = document.getElementById('conversationsList');
+    
+    try {
+        const response = await fetch('/Message/GetRecentConversations');
+        const data = await response.json();
+        
+        if (data.success && data.conversations && data.conversations.length > 0) {
+            list.innerHTML = data.conversations.map(conv => `
+                <div class="conversation-item" data-user-id="${conv.userId}" onclick="window.location.href='/Message/${conv.userId}'">
+                    <img src="${conv.avatar}" alt="${conv.name}" class="conversation-avatar">
+                    <div class="conversation-info">
+                        <div class="conversation-name">${escapeHtml(conv.name)}</div>
+                        <div class="conversation-preview">${escapeHtml(conv.lastMessage)}</div>
+                    </div>
+                    <div class="conversation-meta">
+                        <div class="conversation-time">${conv.timeAgo}</div>
+                        ${conv.unread ? '<div class="unread-badge">1</div>' : ''}
+                    </div>
+                </div>
+            `).join('');
+        } else {
+            list.innerHTML = `
+                <div class="empty-state">
+                    <i class="fa-solid fa-inbox"></i>
+                    <p>Chưa có tin nhắn nào</p>
+                </div>
+            `;
+        }
+    } catch (error) {
+        console.error('Error loading conversations:', error);
+        list.innerHTML = `
+            <div class="empty-state">
+                <i class="fa-solid fa-exclamation-circle"></i>
+                <p>Không thể tải tin nhắn</p>
+            </div>
+        `;
+    }
+}
+
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+</script>

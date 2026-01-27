@@ -1,0 +1,2 @@
+Toàn bộ file trong đây để giao tiếp với Database không sửa hay di chuyển
+Nếu khó xử lí với logic như vậy hãy tìm cách đưa về Folder Data

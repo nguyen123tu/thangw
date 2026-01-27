@@ -1,0 +1,39 @@
+:root {
+  /* Lo-Fi Color Palette */
+  --lofi-cream: #FDF9E7;
+  --lofi-white: #FFFFFF;
+  --lofi-sage: #94AF86;
+  --lofi-dark: #2D2D2D;
+  --lofi-muted: #6B7280;
+  
+  /* Background Colors */
+  --bg-page: #FDF9E7;
+  --bg-card: #FFFFFF;
+  --bg-input: #FFFFFF;
+  --bg-button-primary: #94AF86;
+  
+  /* Text Colors */
+  --text-primary: #2D2D2D;
+  --text-muted: #6B7280;
+  
+  /* Border Colors */
+  --border-primary: #2D2D2D;
+  
+  /* Hard Shadows */
+  --shadow-hard: 4px 4px 0px 0px #2D2D2D;
+  --shadow-hard-sm: 2px 2px 0px 0px #2D2D2D;
+  --shadow-none: none;
+  
+  /* Organic Border Radius - 8-value syntax for hand-drawn effect */
+  --radius-organic-sm: 255px 15px 225px 15px / 15px 225px 15px 255px;
+  /* --radius-organic-md: 15px 255px 15px 225px / 225px 15px 255px 15px; */
+  --radius-organic-lg: 225px 15px 255px 15px / 15px 255px 15px 225px;
+  --radius-organic-circle: 48% 52% 50% 50% / 52% 48% 52% 48%;
+  
+  /* Border Width */
+  --border-width: 2px;
+  
+  /* Transitions */
+  --transition-smooth: all 0.2s ease;
+}
+

@@ -1,0 +1,65 @@
+@model MTU.Models.DTOs.LoginDto
+@{
+    ViewData["Title"] = "Đăng nhập";
+    Layout = null; // Use standalone layout for Auth
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Đăng nhập - MTU Social</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="stylesheet" href="~/css/variables.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/auth.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/login.css" asp-append-version="true" />
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-card">
+            <h1 class="auth-title"></h1>
+            
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success">
+                    @TempData["SuccessMessage"]
+                </div>
+            }
+            
+            <form asp-action="Login" method="post" class="auth-form">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                
+                <div class="auth-field">
+                    <label asp-for="UsernameOrEmail">Email</label>
+                    <input asp-for="UsernameOrEmail" class="auth-input" placeholder="ten@mtu.edu.vn" required>
+                    <span asp-validation-for="UsernameOrEmail" class="text-danger"></span>
+                </div>
+                <div class="auth-field">
+                    <label asp-for="Password">Mật khẩu</label>
+                    <div class="password-wrapper">
+                        <input asp-for="Password" type="password" class="auth-input" placeholder="••••••••" required id="passwordInput">
+                        <button type="button" class="toggle-password" onclick="togglePassword()">
+                            <i class="fa-regular fa-eye" id="toggleIcon"></i>
+                        </button>
+                    </div>
+                    <span asp-validation-for="Password" class="text-danger"></span>
+                </div>
+                
+                <button type="submit" class="auth-btn">Đăng nhập</button>
+                
+                <div class="auth-forgot">
+                    <a href="#">Quên mật khẩu?</a>
+                </div>
+                
+                <div class="auth-divider"></div>
+                
+                <p class="auth-link">Chưa có tài khoản? <a asp-action="Register">Đăng ký ngay</a></p>
+            </form>
+        </div>
+    </div>
+    <script src="~/js/loginTogglePassword.js" asp-append-version="true"></script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+.password-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.password-wrapper .auth-input {
+    width: 100%;
+    padding-right: 45px;
+    box-sizing: border-box;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 12px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--lofi-muted);
+    padding: 5px;
+}
+
+.toggle-password:hover {
+    color: var(--lofi-sage);
+}

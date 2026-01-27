@@ -1,0 +1,424 @@
+@model MTU.Models.DTOs.ProfileDto
+
+@{
+    ViewData["Title"] = Model.FullName;
+    ViewData["IsProfilePage"] = true;
+}
+
+<div class="profile-page-container">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- LEFT COLUMN: Avatar, Name, Bio, Actions -->
+            <div class="col-md-4 col-lg-3">
+                <div class="profile-sidebar">
+                    <!-- Avatar -->
+                    <div class="profile-avatar-section">
+                        <div class="profile-avatar-wrapper-large">
+                            <img src="@(string.IsNullOrEmpty(Model.Avatar) ? "/assets/user.png" : Model.Avatar)" alt="@Model.FullName" class="profile-avatar-large" id="avatarPreview">
+                            @if (Model.IsOwnProfile)
+                            {
+                                <input type="file" id="avatarInput" accept="image/*" style="display: none;" />
+                                <button class="edit-avatar-btn-large" onclick="document.getElementById('avatarInput').click()">
+                                    <i class="fa-solid fa-camera"></i>
+                                </button>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Name & Bio -->
+                    <div class="profile-sidebar-info">
+                        <h1 class="profile-sidebar-name">@Model.FullName</h1>
+                        @if (Model.Student != null && !string.IsNullOrEmpty(Model.Student.Class))
+                        {
+                            <p class="profile-sidebar-meta">@Model.Student.Class</p>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.Bio))
+                        {
+                            <p class="profile-sidebar-bio">@Model.Bio</p>
+                        }
+                        else if (Model.IsOwnProfile)
+                        {
+                            <p class="profile-sidebar-bio profile-placeholder-text">
+                                Chưa cập nhật giới thiệu
+                            </p>
+                        }
+                        
+                        <!-- Quick Info Items -->
+                        <div class="profile-sidebar-details">
+                            @if (Model.Student != null && !string.IsNullOrEmpty(Model.Student.Gender))
+                            {
+                                <div class="sidebar-detail-item">
+                                    @if (Model.Student.Gender == "Nam")
+                                    {
+                                        <i class="fa-solid fa-mars"></i>
+                                    }
+                                    else if (Model.Student.Gender == "Nữ")
+                                    {
+                                        <i class="fa-solid fa-venus"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="fa-solid fa-genderless"></i>
+                                    }
+                                    <span>@Model.Student.Gender</span>
+                                </div>
+                            }
+                            @if (!string.IsNullOrEmpty(Model.Location))
+                            {
+                                <div class="sidebar-detail-item">
+                                    <i class="fa-solid fa-location-dot"></i>
+                                    <span>@Model.Location</span>
+                                </div>
+                            }
+                            @if (Model.Student != null && !string.IsNullOrEmpty(Model.Student.Faculty))
+                            {
+                                <div class="sidebar-detail-item">
+                                    <i class="fa-solid fa-graduation-cap"></i>
+                                    <span>@Model.Student.Faculty</span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="profile-sidebar-actions">
+                        @if (Model.IsOwnProfile)
+                        {
+                            <button class="btn-profile-primary" onclick="openEditProfileModal()">
+                                <i class="fa-solid fa-pen"></i>
+                                Chỉnh sửa hồ sơ
+                            </button>
+                        }
+                        else
+                        {
+                            @if (Model.FriendshipStatus == "accepted")
+                            {
+                                <button class="btn-profile-secondary" id="friendBtn">
+                                    <i class="fa-solid fa-user-check"></i>
+                                    Bạn bè
+                                </button>
+                                <a href="/Message/@Model.UserId" class="btn-profile-primary">
+                                    <i class="fa-solid fa-message"></i>
+                                    Nhắn tin
+                                </a>
+                            }
+                            else if (Model.FriendshipStatus == "pending")
+                            {
+                                <button class="btn-profile-secondary" disabled>
+                                    <i class="fa-solid fa-clock"></i>
+                                    Đã gửi lời mời
+                                </button>
+                            }
+                            else
+                            {
+                                <button class="btn-profile-primary" onclick="sendFriendRequest(@Model.UserId)">
+                                    <i class="fa-solid fa-user-plus"></i>
+                                    Kết bạn
+                                </button>
+                                <button class="btn-profile-secondary" onclick="followUser(@Model.UserId)">
+                                    <i class="fa-solid fa-rss"></i>
+                                    Theo dõi
+                                </button>
+                            }
+                        }
+                    </div>
+
+                    <!-- Quick Info -->
+                    <div class="profile-sidebar-stats">
+                        <div class="stat-item">
+                            <span class="stat-value">@Model.Posts.Count</span>
+                            <span class="stat-label">Bài viết</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value">@Model.FriendCount</span>
+                            <span class="stat-label">Bạn bè</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT PANEL: Tabs, Posts -->
+            <div class="col-md-8 col-lg-9">
+                <div class="profile-main-panel">
+                    <!-- Tabs -->
+                    <div class="profile-tabs-new">
+                        <button class="profile-tab-new active" data-tab="posts">
+                            <i class="fa-solid fa-newspaper"></i>
+                            Bài viết
+                        </button>
+                        <button class="profile-tab-new" data-tab="about">
+                            <i class="fa-solid fa-user"></i>
+                            Giới thiệu
+                        </button>
+                        <button class="profile-tab-new" data-tab="friends">
+                            <i class="fa-solid fa-user-group"></i>
+                            Bạn bè (@Model.FriendCount)
+                        </button>
+                    </div>
+
+                    <!-- Tab Content -->
+                    <div class="profile-tab-content-new active" id="tab-posts">
+                        @if (Model.Posts.Count == 0)
+                        {
+                            <div class="profile-empty-state">
+                                <i class="fa-solid fa-newspaper"></i>
+                                <h3>Chưa có bài viết</h3>
+                                <p>@(Model.IsOwnProfile ? "Bạn chưa đăng bài viết nào." : "Người dùng này chưa đăng bài viết nào.")</p>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="profile-posts-list">
+                                @foreach (var post in Model.Posts)
+                                {
+                                    @await Html.PartialAsync("_PostCardPartial", post)
+                                }
+                            </div>
+                        }
+                    </div>
+
+                    <div class="profile-tab-content-new" id="tab-about">
+                        <div class="about-cards">
+                            @if (Model.Student != null)
+                            {
+                                <div class="info-card-new">
+                                    <h3><i class="fa-solid fa-graduation-cap"></i> Thông tin sinh viên</h3>
+                                    <div class="info-grid-new">
+                                        <div class="info-item-new">
+                                            <span class="info-label-new">Lớp sinh hoạt</span>
+                                            <span class="info-value-new">@(string.IsNullOrEmpty(Model.Student.Class) ? "Chưa cập nhật" : Model.Student.Class)</span>
+                                        </div>
+                                        <div class="info-item-new">
+                                            <span class="info-label-new">Ngành</span>
+                                            <span class="info-value-new">@(string.IsNullOrEmpty(Model.Student.Faculty) ? "Chưa cập nhật" : Model.Student.Faculty)</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+
+                            <div class="info-card-new">
+                                <h3><i class="fa-solid fa-circle-info"></i> Thông tin cá nhân</h3>
+                                <div class="info-list-new">
+                                    @if (!string.IsNullOrEmpty(Model.Location))
+                                    {
+                                        <div class="info-row-new">
+                                            <i class="fa-solid fa-location-dot"></i>
+                                            <span>Sống tại <strong>@Model.Location</strong></span>
+                                        </div>
+                                    }
+                                    @if (!string.IsNullOrEmpty(Model.Interests))
+                                    {
+                                        <div class="info-row-new">
+                                            <i class="fa-solid fa-heart"></i>
+                                            <div class="interests-display-new">
+                                                <span class="interests-label-new">Sở thích:</span>
+                                                <div class="interests-tags-new">
+                                                    @{
+                                                        var interests = Model.Interests.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                                                        var interestIcons = new Dictionary<string, (string icon, string color)>
+                                                        {
+                                                            { "Nghe nhạc", ("fa-music", "#FF6B6B") },
+                                                            { "Xem phim", ("fa-film", "#4ECDC4") },
+                                                            { "Đọc sách", ("fa-book", "#45B7D1") },
+                                                            { "Du lịch", ("fa-plane", "#FFA07A") },
+                                                            { "Thể thao", ("fa-futbol", "#98D8C8") },
+                                                            { "Nấu ăn", ("fa-utensils", "#F7B731") },
+                                                            { "Nhiếp ảnh", ("fa-camera", "#5F27CD") },
+                                                            { "Vẽ tranh", ("fa-palette", "#FF9FF3") },
+                                                            { "Chơi game", ("fa-gamepad", "#54A0FF") },
+                                                            { "Nhớ về cô ấy", ("fa-seedling", "#26DE81") }
+                                                        };
+                                                        
+                                                        foreach (var interest in interests)
+                                                        {
+                                                            var trimmedInterest = interest.Trim();
+                                                            if (interestIcons.TryGetValue(trimmedInterest, out var iconInfo))
+                                                            {
+                                                                <span class="interest-tag-new" style="background-color: @iconInfo.color;">
+                                                                    <i class="fa-solid @iconInfo.icon"></i>
+                                                                    @trimmedInterest
+                                                                </span>
+                                                            }
+                                                            else
+                                                            {
+                                                                <span class="interest-tag-new" style="background-color: #95A5A6;">
+                                                                    <i class="fa-solid fa-star"></i>
+                                                                    @trimmedInterest
+                                                                </span>
+                                                            }
+                                                        }
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="profile-tab-content-new" id="tab-friends">
+                        @if (Model.FriendCount > 0)
+                        {
+                            <div class="friends-grid-new">
+                                @foreach (var friend in Model.Friends)
+                                {
+                                    <a href="/Profile/@friend.UserId" class="friend-card-new">
+                                        <img src="@(string.IsNullOrEmpty(friend.Avatar) ? "/assets/user.png" : friend.Avatar)" alt="@friend.FullName">
+                                        <div class="friend-info-new">
+                                            <h4>@friend.FullName</h4>
+                                            @if (!string.IsNullOrEmpty(friend.Bio))
+                                            {
+                                                <p>@friend.Bio</p>
+                                            }
+                                        </div>
+                                    </a>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="profile-empty-state">
+                                <i class="fa-solid fa-user-group"></i>
+                                <h3>Chưa có bạn bè</h3>
+                                <p>@(Model.IsOwnProfile ? "Bạn chưa có bạn bè nào." : "Người dùng này chưa có bạn bè.")</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Profile Modal -->
+@if (Model.IsOwnProfile)
+{
+    @await Html.PartialAsync("_EditProfileModal", Model)
+}
+
+@section Scripts {
+<script src="~/js/profileValidation.js" asp-append-version="true"></script>
+<script src="~/js/profileManager.js" asp-append-version="true"></script>
+<script src="~/js/interactions.js" asp-append-version="true"></script>
+<script>
+(function() {
+    'use strict';
+
+    function initProfileTabs() {
+        const tabs = document.querySelectorAll('.profile-tab-new');
+        const tabContents = document.querySelectorAll('.profile-tab-content-new');
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', function() {
+                const targetTab = this.getAttribute('data-tab');
+                tabs.forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                tabContents.forEach(content => content.classList.remove('active'));
+                const targetContent = document.getElementById(`tab-${targetTab}`);
+                if (targetContent) targetContent.classList.add('active');
+            });
+        });
+    }
+
+    // Avatar upload handler
+    const avatarInput = document.getElementById('avatarInput');
+    if (avatarInput) {
+        avatarInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+                if (!allowedTypes.includes(file.type)) {
+                    alert('Chỉ chấp nhận file ảnh (JPG, PNG, GIF)');
+                    avatarInput.value = '';
+                    return;
+                }
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('Kích thước file không được vượt quá 5MB');
+                    avatarInput.value = '';
+                    return;
+                }
+                if (window.uploadAvatar) {
+                    window.uploadAvatar();
+                }
+            }
+        });
+    }
+
+    // Initialize interactions for posts on profile page
+    function initInteractions() {
+        if (window.InteractionsManager && window.InteractionsManager.reinitialize) {
+            window.InteractionsManager.reinitialize();
+        }
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+            initProfileTabs();
+            initInteractions();
+        });
+    } else {
+        initProfileTabs();
+        initInteractions();
+    }
+})();
+
+function addFriend(userId) {
+    if (window.sendFriendRequest) {
+        window.sendFriendRequest(userId);
+    }
+}
+
+// Send friend request
+async function sendFriendRequest(userId) {
+    try {
+        const btn = event.target.closest('button');
+        const originalHtml = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang gửi...';
+
+        const response = await fetch('/Profile/SendFriendRequest', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(userId)
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            btn.innerHTML = '<i class="fa-solid fa-clock"></i> Đã gửi lời mời';
+            btn.classList.remove('btn-profile-primary');
+            btn.classList.add('btn-profile-secondary');
+            btn.onclick = null;
+        } else {
+            alert(data.errorMessage || 'Không thể gửi lời mời kết bạn');
+            btn.innerHTML = originalHtml;
+            btn.disabled = false;
+        }
+    } catch (error) {
+        console.error('Error sending friend request:', error);
+        alert('Đã xảy ra lỗi');
+    }
+}
+
+// Follow user
+async function followUser(userId) {
+    try {
+        const btn = event.target.closest('button');
+        const originalHtml = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+
+        // For now, just toggle the button state (follow feature can be expanded later)
+        setTimeout(() => {
+            btn.innerHTML = '<i class="fa-solid fa-check"></i> Đang theo dõi';
+            btn.classList.remove('btn-profile-secondary');
+            btn.classList.add('btn-profile-muted');
+        }, 500);
+    } catch (error) {
+        console.error('Error following user:', error);
+        alert('Đã xảy ra lỗi');
+    }
+}
+</script>
+}

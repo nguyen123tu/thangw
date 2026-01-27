@@ -1,0 +1,48 @@
+@model MTU.Models.DTOs.RegisterDto
+@{
+    ViewData["Title"] = "Đăng ký";
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Đăng ký</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/variables.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/auth.css" asp-append-version="true" />
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-card">
+            <h1 class="auth-title">Đăng ký</h1>
+            <p class="auth-subtitle">Sử dụng email trường @@mtu.edu.vn để đăng ký</p>
+            
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success">
+                    @TempData["SuccessMessage"]
+                </div>
+            }
+            
+            <form asp-action="Register" method="post" class="auth-form">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                
+                <div class="auth-field">
+                    <label asp-for="Email">Email</label>
+                    <input asp-for="Email" type="email" class="auth-input" placeholder="ten.cua.ban@mtu.edu.vn" required>
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                    <small class="auth-hint">Mật khẩu sẽ được gửi đến email này</small>
+                </div>
+
+                <button type="submit" class="auth-btn">Đăng ký</button>
+                
+                <p class="auth-link">Bạn đã có tài khoản? <a asp-action="Login">Đăng nhập</a></p>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

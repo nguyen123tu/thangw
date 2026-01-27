@@ -1,0 +1,253 @@
+@model List<MTU.Models.DTOs.PostDto>
+
+@{
+    ViewData["Title"] = "Trang chủ";
+}
+
+@* Feed Wrapper - Contains Composer and Posts *@
+<div class="feed-wrapper">
+    @* Post Composer *@
+    <section class="feed-composer feed-card">
+        <form id="create-post-form" asp-controller="Post" asp-action="Create" method="post" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
+            <div class="feed-composer-row">
+                <div class="feed-composer-avatar" aria-hidden="true">
+                    <img src="@ViewBag.CurrentUserAvatar" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" />
+                </div>
+                
+                <div class="feed-composer-body">
+                    <div class="feed-composer-inputRow">
+                        <textarea 
+                            id="post-content"
+                            name="Content"
+                            class="feed-composer-input" 
+                            placeholder="Chia sẻ điều gì đó với MTU..." 
+                            rows="1"
+                            style="resize: none; overflow: hidden;"
+                        ></textarea>
+                        <button class="feed-btn feed-btn-primary" type="submit">
+                            <i class="feed-btn-icon fa-solid fa-paper-plane"></i>
+                            <span class="feed-btn-text">Đăng</span>
+                        </button>
+                    </div>
+                    
+                    <input type="file" id="post-image-input" name="Image" accept="image/*" style="display: none;" />
+                    <input type="hidden" id="post-privacy-input" name="Privacy" value="public" />
+                    
+                    <div id="image-preview-container" class="image-preview-container" style="display: none;">
+                        <div class="image-preview-wrapper">
+                            <img id="image-preview-img" class="image-preview-img" src="" alt="Preview" />
+                            <button id="image-preview-remove" class="image-preview-remove" type="button" aria-label="Remove image">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                            <div id="compression-badge" class="compression-badge" style="display: none;">
+                                <i class="compression-badge-icon fa-solid fa-compress"></i>
+                                <span id="compression-badge-text">Compressed</span>
+                            </div>
+                        </div>
+                        <div class="image-preview-info">
+                            <p id="image-preview-info-text" class="image-preview-info-text"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="feed-composer-actions">
+                        <button class="feed-btn" type="button" id="image-upload-btn">
+                            <i class="feed-btn-icon fa-regular fa-image"></i>
+                            <span class="feed-btn-text">Ảnh</span>
+                        </button>
+                        <div class="privacy-dropdown">
+                            <button class="feed-btn" type="button" id="privacy-btn">
+                                <i class="feed-btn-icon fa-solid fa-globe" id="privacy-icon"></i>
+                                <span class="feed-btn-text" id="privacy-text">Công khai</span>
+                                <i class="fa-solid fa-chevron-down" style="font-size: 12px; margin-left: 4px;"></i>
+                            </button>
+                            <div class="privacy-menu" id="privacy-menu">
+                                <div class="privacy-option" data-value="public">
+                                    <i class="fa-solid fa-globe"></i>
+                                    <div>
+                                        <div class="privacy-option-title">Công khai</div>
+                                        <div class="privacy-option-desc">Ai cũng có thể xem</div>
+                                    </div>
+                                </div>
+                                <div class="privacy-option" data-value="friends">
+                                    <i class="fa-solid fa-user-group"></i>
+                                    <div>
+                                        <div class="privacy-option-title">Bạn bè</div>
+                                        <div class="privacy-option-desc">Chỉ bạn bè có thể xem</div>
+                                    </div>
+                                </div>
+                                <div class="privacy-option" data-value="private">
+                                    <i class="fa-solid fa-lock"></i>
+                                    <div>
+                                        <div class="privacy-option-title">Riêng tư</div>
+                                        <div class="privacy-option-desc">Chỉ mình tôi</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="feed-btn" type="button" disabled>
+                            <i class="feed-btn-icon fa-regular fa-face-smile"></i>
+                            <span class="feed-btn-text">Cảm xúc</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </section>
+
+    @* Story Rail - Nằm dưới Post Composer *@
+    @await Html.PartialAsync("_StoryPartial")
+
+    <section class="feed-list">
+        @if (ViewBag.ErrorMessage != null)
+        {
+            <div class="feed-card" style="padding: 20px; text-align: center; color: #e74c3c;">
+                <p>@ViewBag.ErrorMessage</p>
+            </div>
+        }
+        
+        @if (Model.Count == 0 && ViewBag.ErrorMessage == null)
+        {
+            <div class="feed-card" style="padding: 20px; text-align: center;">
+                <p>Chưa có bài viết nào. Hãy là người đầu tiên chia sẻ!</p>
+            </div>
+        }
+        
+        @foreach (var post in Model)
+        {
+            @await Html.PartialAsync("_PostCardPartial", post)
+        }
+    </section>
+
+    @* Pagination Controls *@
+    @if (ViewBag.TotalPages > 1)
+    {
+        <div class="feed-pagination" style="display: flex; justify-content: center; align-items: center; gap: 10px; padding: 20px; margin-top: 20px;">
+            @if (ViewBag.HasPreviousPage)
+            {
+                <a href="?page=@(ViewBag.CurrentPage - 1)" class="feed-btn" style="text-decoration: none;">
+                    <i class="fa-solid fa-chevron-left"></i> Previous
+                </a>
+            }
+            else
+            {
+                <button class="feed-btn" disabled style="opacity: 0.5; cursor: not-allowed;">
+                    <i class="fa-solid fa-chevron-left"></i> Previous
+                </button>
+            }
+            
+            <span style="padding: 0 15px; font-weight: 500;">
+                Page @ViewBag.CurrentPage of @ViewBag.TotalPages
+            </span>
+            
+            @if (ViewBag.HasNextPage)
+            {
+                <a href="?page=@(ViewBag.CurrentPage + 1)" class="feed-btn" style="text-decoration: none;">
+                    Next <i class="fa-solid fa-chevron-right"></i>
+                </a>
+            }
+            else
+            {
+                <button class="feed-btn" disabled style="opacity: 0.5; cursor: not-allowed;">
+                    Next <i class="fa-solid fa-chevron-right"></i>
+                </button>
+            }
+        </div>
+    }
+
+    @* Loading Indicator *@
+    <div class="feed-loading" style="display: none;">
+        <div class="lofi-spinner"></div>
+        <p>Đang tải thêm bài viết...</p>
+    </div>
+
+    @* End of Feed Message *@
+    <div class="feed-end" style="display: none;">
+        <p>Bạn đã xem hết tất cả bài viết!</p>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/imageHandler.js" asp-append-version="true"></script>
+    <script src="~/js/interactions.js" asp-append-version="true"></script>
+    <script src="~/js/privacyDropdown.js" asp-append-version="true"></script>
+    <script>
+        (function() {
+            'use strict';
+
+            const textarea = document.getElementById('post-content');
+            if (textarea) {
+                textarea.addEventListener('input', function() {
+                    this.style.height = 'auto';
+                    this.style.height = (this.scrollHeight) + 'px';
+                });
+            }
+
+            const imageUploadBtn = document.getElementById('image-upload-btn');
+            const imageInput = document.getElementById('post-image-input');
+            const imagePreviewContainer = document.getElementById('image-preview-container');
+            const imagePreviewImg = document.getElementById('image-preview-img');
+            const imagePreviewRemove = document.getElementById('image-preview-remove');
+            const imagePreviewInfo = document.getElementById('image-preview-info-text');
+
+            if (imageUploadBtn && imageInput) {
+                imageUploadBtn.addEventListener('click', function() {
+                    imageInput.click();
+                });
+
+                imageInput.addEventListener('change', function(e) {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+                        if (!allowedTypes.includes(file.type)) {
+                            alert('Chỉ chấp nhận file ảnh (JPG, PNG, GIF)');
+                            imageInput.value = '';
+                            return;
+                        }
+
+                        if (file.size > 5 * 1024 * 1024) {
+                            alert('Kích thước file không được vượt quá 5MB');
+                            imageInput.value = '';
+                            return;
+                        }
+
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            imagePreviewImg.src = e.target.result;
+                            imagePreviewContainer.style.display = 'block';
+                            
+                            const sizeInMB = (file.size / (1024 * 1024)).toFixed(2);
+                            imagePreviewInfo.textContent = `${file.name} (${sizeInMB} MB)`;
+                        };
+                        reader.readAsDataURL(file);
+                    } else {
+                        imagePreviewContainer.style.display = 'none';
+                    }
+                });
+
+                if (imagePreviewRemove) {
+                    imagePreviewRemove.addEventListener('click', function() {
+                        imageInput.value = '';
+                        imagePreviewImg.src = '';
+                        imagePreviewContainer.style.display = 'none';
+                        imagePreviewInfo.textContent = '';
+                    });
+                }
+            }
+
+            const form = document.getElementById('create-post-form');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    const content = textarea.value.trim();
+                    const hasImage = imageInput.files.length > 0;
+
+                    if (!content && !hasImage) {
+                        e.preventDefault();
+                        alert('Vui lòng nhập nội dung hoặc chọn ảnh để đăng bài');
+                        return false;
+                    }
+                });
+            }
+        })();
+    </script>
+}

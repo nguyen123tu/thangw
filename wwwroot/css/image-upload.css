@@ -1,0 +1,180 @@
+/**
+ * Image Upload and Preview Styles
+ * Lo-fi aesthetic with hand-drawn borders and hard shadows
+ * 
+ * TODO: Add animation for preview appearance
+ * TODO: Add responsive styles for mobile devices
+ * TODO: Add dark mode support if needed
+ */
+
+/* Image Preview Container */
+.image-preview-container {
+    /* TODO: Consider adding margin-top for spacing from input */
+    margin-top: 12px;
+    padding: 12px;
+    background: var(--lofi-white, #FFFFFF);
+    border: 2px solid var(--lofi-dark, #2D2D2D);
+    /* Organic border radius for hand-drawn effect */
+    border-radius: 15px 225px 15px 225px / 225px 15px 225px 15px;
+    /* Hard shadow for lo-fi aesthetic */
+    box-shadow: 4px 4px 0px 0px var(--lofi-dark, #2D2D2D);
+    position: relative;
+    display: none; /* Hidden by default */
+}
+
+.image-preview-container.visible {
+    display: block;
+}
+
+/* Preview Image Wrapper */
+.image-preview-wrapper {
+    position: relative;
+    width: 100%;
+    /* TODO: Add max-height to prevent overly tall images */
+    max-height: 400px;
+    overflow: hidden;
+    border-radius: 12px 200px 12px 200px / 200px 12px 200px 12px;
+    border: 2px solid var(--lofi-dark, #2D2D2D);
+}
+
+/* Preview Image */
+.image-preview-img {
+    width: 100%;
+    height: auto;
+    display: block;
+    /* TODO: Add object-fit for better image display */
+    object-fit: cover;
+}
+
+/* Compression Badge */
+.compression-badge {
+    /* TODO: Consider different positioning options */
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    padding: 6px 12px;
+    background: var(--lofi-sage, #94AF86);
+    color: var(--lofi-white, #FFFFFF);
+    border: 2px solid var(--lofi-dark, #2D2D2D);
+    /* Organic border radius */
+    border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+    /* Hard shadow */
+    box-shadow: 2px 2px 0px 0px var(--lofi-dark, #2D2D2D);
+    font-size: 12px;
+    font-weight: 600;
+    /* TODO: Add animation for badge appearance */
+}
+
+/* Badge Icon */
+.compression-badge-icon {
+    margin-right: 4px;
+}
+
+/* Remove Button */
+.image-preview-remove {
+    /* TODO: Consider alternative positioning (top-left, bottom-right, etc.) */
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    width: 32px;
+    height: 32px;
+    background: var(--lofi-white, #FFFFFF);
+    border: 2px solid var(--lofi-dark, #2D2D2D);
+    /* Organic circular shape */
+    border-radius: 50% 48% 52% 50% / 50% 52% 48% 50%;
+    /* Hard shadow */
+    box-shadow: 2px 2px 0px 0px var(--lofi-dark, #2D2D2D);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--lofi-dark, #2D2D2D);
+    font-size: 18px;
+    font-weight: bold;
+    transition: all 0.2s ease;
+    /* TODO: Add hover state styling */
+}
+
+.image-preview-remove:hover {
+    /* Pressed effect - translate down and remove shadow */
+    transform: translateY(2px);
+    box-shadow: none;
+    background: #f5f5f5;
+}
+
+.image-preview-remove:active {
+    transform: translateY(2px);
+    box-shadow: none;
+}
+
+/* Preview Info Section */
+.image-preview-info {
+    margin-top: 8px;
+    padding: 8px;
+    background: var(--lofi-cream, #FDF9E7);
+    border: 2px solid var(--lofi-dark, #2D2D2D);
+    border-radius: 12px 200px 12px 200px / 200px 12px 200px 12px;
+    font-size: 13px;
+    color: var(--lofi-dark, #2D2D2D);
+    /* TODO: Add icon for info section */
+}
+
+.image-preview-info-text {
+    margin: 0;
+    line-height: 1.4;
+}
+
+.image-preview-info-highlight {
+    font-weight: 600;
+    color: var(--lofi-sage, #94AF86);
+}
+
+/* Loading State */
+.image-preview-loading {
+    /* TODO: Implement loading spinner or skeleton */
+    padding: 40px;
+    text-align: center;
+    color: var(--lofi-muted, #6B7280);
+    font-style: italic;
+}
+
+/* Responsive Styles */
+/* TODO: Add mobile-specific adjustments */
+@media (max-width: 800px) {
+    .image-preview-container {
+        margin-top: 8px;
+        padding: 8px;
+    }
+    
+    .image-preview-wrapper {
+        max-height: 300px;
+    }
+    
+    .compression-badge {
+        font-size: 11px;
+        padding: 4px 8px;
+    }
+    
+    .image-preview-remove {
+        width: 28px;
+        height: 28px;
+        font-size: 16px;
+    }
+}
+
+/* Animation for preview appearance */
+/* TODO: Add fade-in or slide-in animation */
+@keyframes fadeInPreview {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.image-preview-container.visible {
+    animation: fadeInPreview 0.3s ease;
+}

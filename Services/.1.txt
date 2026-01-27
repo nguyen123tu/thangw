@@ -1,0 +1,9 @@
+Các file trong đây tương tự xử lí các nghiệp vụ từ Repository gửi về để map với DTO (Data Transfer Object)
+
+AuthService	Đăng ký, đăng nhập, đổi mật khẩu, tìm user.
+PostService	Lấy feed, tạo bài, xóa bài, upload ảnh bài viết, map DTO.
+FriendshipService	Gợi ý bạn bè, gửi/nhận lời mời, chấp nhận/từ chối, thông báo.
+ProfileService	Lấy hồ sơ, bài viết, bạn bè, cập nhật profile (avatar/cover).
+ProfileUpdateService	Cập nhật thông tin cơ bản + student, avatar/cover, đánh dấu hoàn thành profile.
+InteractionService	Like/unlike, thêm comment, lấy comment.
+I*Service	Interface định nghĩa hợp đồng cho các service trên.

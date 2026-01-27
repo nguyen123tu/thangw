@@ -1,0 +1,777 @@
+@model MTU.Models.Entities.Story
+
+@{
+    Layout = null;
+    var userStories = ViewBag.UserStories as List<int> ?? new List<int>();
+    var currentIndex = ViewBag.CurrentIndex as int? ?? 0;
+    var prevStoryId = currentIndex > 0 ? userStories[currentIndex - 1] : (int?)null;
+    var nextStoryId = currentIndex < userStories.Count - 1 ? userStories[currentIndex + 1] : (int?)null;
+    var authorName = Model.User != null ? $"{Model.User.FirstName} {Model.User.LastName}".Trim() : "User";
+    var authorAvatar = Model.User?.Avatar ?? "/assets/user.png";
+    var isOwnStory = ViewBag.IsOwnStory as bool? ?? false;
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Story - @authorName</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="~/css/variables.css" asp-append-version="true" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            overflow-x: hidden;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        .story-viewer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #000;
+        }
+
+        .story-container {
+            position: relative;
+            width: 100%;
+            max-width: 420px;
+            height: 100%;
+            max-height: 100vh;
+            background: #1a1a1a;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Progress bars */
+        .story-progress {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            gap: 4px;
+            padding: 12px 16px;
+            z-index: 10;
+        }
+
+        .progress-bar {
+            flex: 1;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .progress-bar.active .progress-fill {
+            animation: progressFill 15s linear forwards;
+        }
+
+        .progress-bar.completed .progress-fill {
+            width: 100%;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #fff;
+            width: 0;
+        }
+
+        @@keyframes progressFill {
+            from { width: 0; }
+            to { width: 100%; }
+        }
+
+        /* Header */
+        .story-header {
+            position: absolute;
+            top: 24px;
+            left: 0;
+            right: 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            z-index: 10;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.6), transparent);
+        }
+
+        .story-author {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .story-author-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid #fff;
+            object-fit: cover;
+        }
+
+        .story-author-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .story-author-name {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .story-time {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .story-actions {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .story-action-btn {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 8px;
+            opacity: 0.9;
+            transition: opacity 0.2s;
+        }
+
+        .story-action-btn:hover {
+            opacity: 1;
+        }
+
+        .story-action-btn.muted i {
+            color: #ff6b6b;
+        }
+
+        /* Media container */
+        .story-media {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .story-media img,
+        .story-media video {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .story-media video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            background: #000;
+        }
+
+        .story-media video.vertical {
+            object-fit: contain;
+            max-height: 100%;
+        }
+
+        /* Caption */
+        .story-caption {
+            position: absolute;
+            bottom: 80px;
+            left: 0;
+            right: 0;
+            padding: 16px;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            text-align: center;
+        }
+
+        .story-caption p {
+            font-size: 15px;
+            line-height: 1.4;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+        }
+
+        /* Navigation */
+        .story-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 50%;
+            height: 80%;
+            cursor: pointer;
+            z-index: 5;
+        }
+
+        .story-nav.prev {
+            left: 0;
+        }
+
+        .story-nav.next {
+            right: 0;
+        }
+
+        .nav-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 48px;
+            height: 48px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .story-nav:hover .nav-arrow {
+            opacity: 1;
+        }
+
+        .story-nav.prev .nav-arrow {
+            left: 16px;
+        }
+
+        .story-nav.next .nav-arrow {
+            right: 16px;
+        }
+
+        /* Close button */
+        .close-btn {
+            position: absolute;
+            top: 24px;
+            right: 16px;
+            z-index: 20;
+        }
+
+        /* Footer */
+        .story-footer {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+        }
+
+        .story-footer.hidden {
+            display: none;
+        }
+
+        .story-reactions {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .reaction-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.3);
+            font-size: 20px;
+            color: #fff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .reaction-btn:hover {
+            background: rgba(255,255,255,0.25);
+            transform: scale(1.15);
+        }
+
+        .reaction-btn.reacted {
+            background: rgba(255,255,255,0.4);
+            transform: scale(1.2);
+        }
+
+        .reaction-btn i {
+            font-size: 18px;
+            color: #fff;
+        }
+
+        .story-reply-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .story-reply-input {
+            flex: 1;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 24px;
+            padding: 12px 20px;
+            color: #fff;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .story-reply-input::placeholder {
+            color: rgba(255,255,255,0.6);
+        }
+
+        .story-send-btn {
+            background: var(--lofi-sage);
+            border: none;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            color: #fff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        /* Own story footer - viewers list */
+        .story-viewers {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 16px;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .viewers-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #fff;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .viewers-info i {
+            font-size: 18px;
+        }
+
+        .delete-story-btn {
+            background: rgba(239, 68, 68, 0.8);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            color: #fff;
+            font-size: 13px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .delete-story-btn:hover {
+            background: rgba(239, 68, 68, 1);
+        }
+
+        /* View count */
+        .view-count {
+            position: absolute;
+            bottom: 80px;
+            left: 16px;
+            font-size: 13px;
+            opacity: 0.8;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Paused indicator */
+        .paused-indicator {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 64px;
+            opacity: 0;
+            transition: opacity 0.2s;
+            pointer-events: none;
+        }
+
+        .story-container.paused .paused-indicator {
+            opacity: 0.8;
+        }
+
+        .story-container.paused .progress-bar.active .progress-fill {
+            animation-play-state: paused;
+        }
+    </style>
+</head>
+<body>
+    <div class="story-viewer">
+        <div class="story-container" id="storyContainer">
+            <!-- Progress bars -->
+            <div class="story-progress">
+                @for (int i = 0; i < userStories.Count; i++)
+                {
+                    var barClass = i < currentIndex ? "completed" : (i == currentIndex ? "active" : "");
+                    <div class="progress-bar @barClass">
+                        <div class="progress-fill"></div>
+                    </div>
+                }
+            </div>
+
+            <!-- Header -->
+            <div class="story-header">
+                <div class="story-author">
+                    <img src="@authorAvatar" alt="@authorName" class="story-author-avatar">
+                    <div class="story-author-info">
+                        <span class="story-author-name">@authorName</span>
+                        <span class="story-time">@GetTimeAgo(Model.CreatedAt)</span>
+                    </div>
+                </div>
+                <div class="story-actions">
+                    @if (Model.MediaType == "video")
+                    {
+                        <button class="story-action-btn" id="muteBtn" title="Tắt/Bật tiếng">
+                            <i class="fa-solid fa-volume-high"></i>
+                        </button>
+                    }
+                    <button class="story-action-btn" id="pauseBtn" title="Tạm dừng">
+                        <i class="fa-solid fa-pause"></i>
+                    </button>
+                    <a href="/" class="story-action-btn" title="Đóng">
+                        <i class="fa-solid fa-xmark"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Media -->
+            <div class="story-media">
+                @if (Model.MediaType == "video")
+                {
+                    <video id="storyVideo" autoplay playsinline>
+                        <source src="@Model.MediaUrl" type="video/mp4">
+                    </video>
+                }
+                else
+                {
+                    <img src="@Model.MediaUrl" alt="Story">
+                }
+            </div>
+
+            <!-- Caption -->
+            @if (!string.IsNullOrEmpty(Model.Caption))
+            {
+                <div class="story-caption">
+                    <p>@Model.Caption</p>
+                </div>
+            }
+
+            <!-- View count -->
+            <div class="view-count">
+                <i class="fa-solid fa-eye"></i>
+                <span>@Model.ViewCount</span>
+            </div>
+
+            <!-- Navigation areas -->
+            @if (prevStoryId.HasValue)
+            {
+                <a href="/Story/View/@prevStoryId" class="story-nav prev">
+                    <div class="nav-arrow">
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </div>
+                </a>
+            }
+            @if (nextStoryId.HasValue)
+            {
+                <a href="/Story/View/@nextStoryId" class="story-nav next">
+                    <div class="nav-arrow">
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </div>
+                </a>
+            }
+            else
+            {
+                <div class="story-nav next" onclick="window.location.href='/'">
+                    <div class="nav-arrow">
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </div>
+                </div>
+            }
+
+            <!-- Paused indicator -->
+            <div class="paused-indicator">
+                <i class="fa-solid fa-pause"></i>
+            </div>
+
+            <!-- Footer - Reply/Reactions (only for other's stories) -->
+            @if (!isOwnStory)
+            {
+                <div class="story-footer">
+                    <div class="story-reactions">
+                        <button class="reaction-btn" data-reaction="heart" title="Thả tim">
+                            <i class="fa-solid fa-heart"></i>
+                        </button>
+                        <button class="reaction-btn" data-reaction="fire" title="Tuyệt vời">
+                            <i class="fa-solid fa-fire"></i>
+                        </button>
+                        <button class="reaction-btn" data-reaction="laugh" title="Haha">
+                            <i class="fa-solid fa-face-laugh-squint"></i>
+                        </button>
+                        <button class="reaction-btn" data-reaction="wow" title="Wow">
+                            <i class="fa-solid fa-face-surprise"></i>
+                        </button>
+                    </div>
+                    <div class="story-reply-row">
+                        <input type="text" class="story-reply-input" id="replyInput" placeholder="Gửi tin nhắn...">
+                        <button class="story-send-btn" id="sendReplyBtn">
+                            <i class="fa-solid fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <!-- Own story footer - show viewers -->
+                <div class="story-viewers">
+                    <div class="viewers-info">
+                        <i class="fa-solid fa-eye"></i>
+                        <span>@Model.ViewCount người đã xem</span>
+                    </div>
+                    <button class="delete-story-btn" onclick="deleteStory(@Model.StoryId)">
+                        <i class="fa-solid fa-trash"></i>
+                        Xóa story
+                    </button>
+                </div>
+            }
+        </div>
+    </div>
+
+    <script>
+    (function() {
+        'use strict';
+
+        const container = document.getElementById('storyContainer');
+        const video = document.getElementById('storyVideo');
+        const muteBtn = document.getElementById('muteBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const replyInput = document.getElementById('replyInput');
+        const sendReplyBtn = document.getElementById('sendReplyBtn');
+        let isPaused = false;
+        let isMuted = false;
+        const storyUserId = @Model.UserId;
+        const storyId = @Model.StoryId;
+        const isOwnStory = @(isOwnStory ? "true" : "false");
+
+        // Auto-navigate to next story or home after progress completes
+        const progressBar = document.querySelector('.progress-bar.active');
+        if (progressBar) {
+            const nextUrl = '@(nextStoryId.HasValue ? $"/Story/View/{nextStoryId}" : "/")';
+            
+            // For video, sync with video duration
+            if (video) {
+                video.addEventListener('loadedmetadata', function() {
+                    const duration = video.duration;
+                    progressBar.querySelector('.progress-fill').style.animationDuration = duration + 's';
+                });
+
+                video.addEventListener('ended', function() {
+                    window.location.href = nextUrl;
+                });
+            } else {
+                // For images, use 15 second timer
+                setTimeout(function() {
+                    window.location.href = nextUrl;
+                }, 15000);
+            }
+        }
+
+        // Mute toggle for video
+        if (muteBtn && video) {
+            muteBtn.addEventListener('click', function() {
+                isMuted = !isMuted;
+                video.muted = isMuted;
+                muteBtn.innerHTML = isMuted 
+                    ? '<i class="fa-solid fa-volume-xmark"></i>' 
+                    : '<i class="fa-solid fa-volume-high"></i>';
+                muteBtn.classList.toggle('muted', isMuted);
+            });
+        }
+
+        // Pause toggle
+        if (pauseBtn) {
+            pauseBtn.addEventListener('click', function() {
+                isPaused = !isPaused;
+                container.classList.toggle('paused', isPaused);
+                pauseBtn.innerHTML = isPaused 
+                    ? '<i class="fa-solid fa-play"></i>' 
+                    : '<i class="fa-solid fa-pause"></i>';
+                
+                if (video) {
+                    if (isPaused) {
+                        video.pause();
+                    } else {
+                        video.play();
+                    }
+                }
+            });
+        }
+
+        // Hold to pause
+        let holdTimer;
+        container.addEventListener('mousedown', function(e) {
+            if (e.target.closest('.story-action-btn') || e.target.closest('.story-footer') || e.target.closest('.story-viewers')) return;
+            
+            holdTimer = setTimeout(function() {
+                isPaused = true;
+                container.classList.add('paused');
+                if (video) video.pause();
+            }, 200);
+        });
+
+        container.addEventListener('mouseup', function() {
+            clearTimeout(holdTimer);
+            if (isPaused && !pauseBtn.innerHTML.includes('play')) {
+                isPaused = false;
+                container.classList.remove('paused');
+                if (video) video.play();
+            }
+        });
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowLeft') {
+                const prevLink = document.querySelector('.story-nav.prev');
+                if (prevLink) prevLink.click();
+            } else if (e.key === 'ArrowRight' || e.key === ' ') {
+                const nextLink = document.querySelector('.story-nav.next');
+                if (nextLink) nextLink.click();
+            } else if (e.key === 'Escape') {
+                window.location.href = '/';
+            } else if (e.key === 'm' && video) {
+                muteBtn.click();
+            }
+        });
+
+        // Reaction buttons
+        document.querySelectorAll('.reaction-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                const reaction = this.dataset.reaction;
+                this.classList.add('reacted');
+                
+                // Send reaction as message
+                sendStoryReply(reaction === 'heart' ? '😯' : 
+                              reaction === 'fire' ? '🙄' : 
+                              reaction === 'laugh' ? '😃' : '😮');
+                
+                setTimeout(() => {
+                    this.classList.remove('reacted');
+                }, 500);
+            });
+        });
+
+        // Send reply
+        if (sendReplyBtn && replyInput) {
+            sendReplyBtn.addEventListener('click', function() {
+                const content = replyInput.value.trim();
+                if (content) {
+                    sendStoryReply(content);
+                    replyInput.value = '';
+                }
+            });
+
+            replyInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    const content = this.value.trim();
+                    if (content) {
+                        sendStoryReply(content);
+                        this.value = '';
+                    }
+                }
+            });
+        }
+
+        async function sendStoryReply(content) {
+            try {
+                const response = await fetch('/Message/SendMessage', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        receiverId: storyUserId, 
+                        content: 'Đã trả lời tin của bạn: ' + content 
+                    })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    const feedback = document.createElement('div');
+                    feedback.style.cssText = 'position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.8);color:white;padding:12px 24px;border-radius:20px;z-index:9999;';
+                    feedback.textContent = 'Đã gửi!';
+                    document.body.appendChild(feedback);
+                    setTimeout(() => feedback.remove(), 2000);
+                }
+            } catch (error) {
+                console.error('Error sending reply:', error);
+            }
+        }
+    })();
+
+    async function deleteStory(storyId) {
+        if (!confirm('Bạn có chắc muốn xóa story này?')) return;
+        
+        try {
+            const response = await fetch('/Story/Delete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(storyId)
+            });
+            
+            const data = await response.json();
+            if (data.success) {
+                window.location.href = '/';
+            } else {
+                alert(data.message || 'Không thể xóa story');
+            }
+        } catch (error) {
+            console.error('Error deleting story:', error);
+        }
+    }
+    </script>
+</body>
+</html>
+
+@functions {
+    string GetTimeAgo(DateTime dateTime)
+    {
+        var timeSpan = DateTime.Now - dateTime;
+
+        if (timeSpan.TotalMinutes < 1) return "Vừa xong";
+        if (timeSpan.TotalMinutes < 60) return $"{(int)timeSpan.TotalMinutes} phút trước";
+        if (timeSpan.TotalHours < 24) return $"{(int)timeSpan.TotalHours} giờ trước";
+        
+        return dateTime.ToString("dd/MM/yyyy");
+    }
+}

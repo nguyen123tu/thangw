@@ -1,0 +1,114 @@
+@model MTU.Models.DTOs.PostDto
+
+<article class="post-card feed-card" data-post-id="@Model.PostId">
+    <header class="post-header">
+        <div class="post-author">
+            <div class="post-avatar" aria-hidden="true">
+                <img src="@Model.AuthorAvatar" alt="@Model.AuthorName">
+            </div>
+            
+            <div class="post-authorBody">
+                <div class="post-authorName">@Model.AuthorName</div>
+                <div class="post-meta">@Model.TimeAgo</div>
+            </div>
+        </div>
+        
+        <button class="post-more" type="button" aria-label="Tùy chọn" onclick="togglePostMenu(this)">
+            <i class="fa-solid fa-ellipsis"></i>
+        </button>
+        <div class="post-menu-dropdown">
+            @if (Model.IsOwnPost)
+            {
+                <button class="post-menu-item post-menu-delete" onclick="deletePost(@Model.PostId)">
+                    <i class="fa-solid fa-trash"></i>
+                    Xóa bài viết
+                </button>
+                <button class="post-menu-item" onclick="editPost(@Model.PostId)">
+                    <i class="fa-solid fa-pen"></i>
+                    Chỉnh sửa
+                </button>
+            }
+            else
+            {
+                <button class="post-menu-item">
+                    <i class="fa-solid fa-bookmark"></i>
+                    Lưu bài viết
+                </button>
+                <button class="post-menu-item">
+                    <i class="fa-solid fa-eye-slash"></i>
+                    Ẩn bài viết
+                </button>
+                <button class="post-menu-item post-menu-report">
+                    <i class="fa-solid fa-flag"></i>
+                    Báo cáo
+                </button>
+            }
+        </div>
+    </header>
+
+    <div class="post-body">
+        @if (!string.IsNullOrWhiteSpace(Model.Content))
+        {
+            <div class="post-content">@Model.Content</div>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(Model.ImageUrl))
+        {
+            <div class="post-media">
+                <img class="post-mediaImage" src="@Model.ImageUrl" alt="Post image" />
+            </div>
+        }
+    </div>
+
+    <div class="post-stats">
+        <div class="post-likes">
+            <i class="post-likeIcon fa-solid fa-thumbs-up"></i>
+            <span class="post-likeCount">@Model.LikeCount</span>
+        </div>
+        <div class="post-counts">
+            <span class="post-countItem"><span class="post-commentCount">@Model.CommentCount</span> bình luận</span>
+            <span class="post-countItem">0 chia sẻ</span>
+        </div>
+    </div>
+
+    <div class="post-actions">
+        <button class="post-actionBtn post-action-like" type="button" data-liked="@Model.IsLikedByCurrentUser.ToString().ToLower()">
+            <i class="post-actionIcon @(Model.IsLikedByCurrentUser ? "fa-solid" : "fa-regular") fa-thumbs-up"></i>
+            <span class="post-actionText">Thích</span>
+        </button>
+
+        <button class="post-actionBtn post-action-comment" type="button">
+            <i class="post-actionIcon fa-regular fa-comment"></i>
+            <span class="post-actionText">Bình luận</span>
+        </button>
+
+        <button class="post-actionBtn post-action-share" type="button">
+            <i class="post-actionIcon fa-solid fa-share"></i>
+            <span class="post-actionText">Chia sẻ</span>
+        </button>
+    </div>
+
+    <details class="post-comments-expandable">
+        <summary class="post-comments-toggle" style="display: none;">
+            Toggle Comments
+        </summary>
+        
+        <div class="post-commentsPanel">
+            <div class="post-commentRow">
+                <div class="post-commentAvatar" aria-hidden="true">
+                    <i class="fa-solid fa-user"></i>
+                </div>
+                <div class="post-commentBox">
+                    <input class="post-commentInput" type="text" placeholder="Viết bình luận..." />
+                    <button class="post-commentSend" type="button" aria-label="Gửi">
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="post-commentList">
+                @* Comments will be loaded dynamically via Ajax *@
+            </div>
+        </div>
+    </details>
+</article>

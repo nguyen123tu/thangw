@@ -1,0 +1,592 @@
+@{
+    var isProfilePage = ViewData["IsProfilePage"] as bool? ?? false;
+    var isAuthenticated = User?.Identity?.IsAuthenticated ?? false;
+}
+
+<header class="app-header">
+    <a href="/" class="header-logo">
+        <span class="header-logo-icon">&lt;/&gt;</span>
+        <span class="header-logo-text">MTU</span>
+    </a>
+    
+    @if (isAuthenticated)
+    {
+        <!-- Expandable Search Bar -->
+        <div class="header-search" id="headerSearch">
+            <button class="header-search-toggle" id="searchToggle" type="button" aria-label="Search">
+                <i class="fas fa-search"></i>
+            </button>
+            <input 
+                type="text" 
+                class="header-search-input" 
+                id="searchInput"
+                placeholder="Tìm kiếm trên MTU..." 
+                aria-label="Search"
+                autocomplete="off"
+            />
+            <div class="search-results-dropdown" id="searchResults" style="display: none;">
+                <div class="search-results-list" id="searchResultsList"></div>
+            </div>
+        </div>
+        
+
+        
+        <!-- Right-aligned Actions -->
+        <div class="header-actions ms-auto">
+            <!-- Messages Dropdown -->
+            <div class="dropdown">
+                <button class="header-icon-btn dropdown-toggle" type="button" id="messagesDropdown" 
+                        data-bs-toggle="dropdown" aria-expanded="false" aria-label="Tin nhắn">
+                    <i class="fas fa-envelope"></i>
+                    <span class="badge" id="messagesBadge">0</span>
+                </button>
+                <div class="dropdown-menu dropdown-menu-end header-dropdown-panel" aria-labelledby="messagesDropdown">
+                    <div class="dropdown-header-custom">
+                        <h6><i class="fas fa-envelope"></i> Tin nhắn</h6>
+                    </div>
+                    <div class="dropdown-body" id="messagesBody">
+                        <div class="empty-state">
+                            <i class="fas fa-inbox"></i>
+                            <p>Chưa có tin nhắn nào</p>
+                        </div>
+                    </div>
+                    <div class="dropdown-footer-custom">
+                        <a href="/Messages">Xem tất cả tin nhắn</a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Notifications Dropdown -->
+            <div class="dropdown">
+                <button class="header-icon-btn dropdown-toggle" type="button" id="notificationsDropdown" 
+                        data-bs-toggle="dropdown" aria-expanded="false" aria-label="Thông báo">
+                    <i class="fas fa-bell"></i>
+                    <span class="badge" id="notificationsBadge">0</span>
+                </button>
+                <div class="dropdown-menu dropdown-menu-end header-dropdown-panel" aria-labelledby="notificationsDropdown">
+                    <div class="dropdown-header-custom">
+                        <h6><i class="fas fa-bell"></i> Thông báo</h6>
+                    </div>
+                    <div class="dropdown-body" id="notificationsBody">
+                        <div class="empty-state">
+                            <i class="fas fa-bell-slash"></i>
+                            <p>Chưa có thông báo nào</p>
+                        </div>
+                    </div>
+                    <div class="dropdown-footer-custom">
+                        <a href="/Notifications">Xem tất cả thông báo</a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- User Avatar & Name with Dropdown -->
+            <div class="dropdown header-user-menu">
+                <button class="header-user-btn dropdown-toggle" 
+                        type="button" 
+                        id="userMenuDropdown" 
+                        data-bs-toggle="dropdown" 
+                        aria-expanded="false"
+                        aria-label="User menu">
+                    <img src="@(ViewBag.CurrentUserAvatar ?? "/assets/user.png")" alt="@(ViewBag.CurrentUserFullName ?? User?.Identity?.Name ?? "User")" class="header-user-avatar" />
+                    <span class="header-user-name">@(ViewBag.CurrentUserFullName ?? User?.Identity?.Name ?? "User")</span>
+                </button>
+                
+                <ul class="dropdown-menu dropdown-menu-end header-dropdown-menu" aria-labelledby="userMenuDropdown">
+                    <li>
+                        <a href="/Profile" class="dropdown-item">
+                            <i class="fas fa-user"></i>
+                            <span>Trang cá nhân</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/Home/Settings" class="dropdown-item">
+                            <i class="fas fa-gear"></i>
+                            <span>Cài đặt</span>
+                        </a>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <form asp-controller="Home" asp-action="Logout" method="post" class="dropdown-form">
+                            <button type="submit" class="dropdown-item">
+                                <i class="fas fa-sign-out-alt"></i>
+                                <span>Đăng xuất</span>
+                            </button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    }
+</header>
+
+<style>
+/* Search Results Dropdown */
+.search-results-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 300px;
+    max-height: 400px;
+    overflow-y: auto;
+    background: var(--lofi-white, #fff);
+    border: 2px solid var(--lofi-dark, #1a1a2e);
+    border-radius: 12px;
+    box-shadow: 4px 4px 0 0 var(--lofi-dark, #1a1a2e);
+    margin-top: 8px;
+    z-index: 1050;
+}
+
+.search-results-list {
+    padding: 8px;
+}
+
+.search-result-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    color: inherit;
+}
+
+.search-result-item:hover {
+    background: var(--lofi-cream, #faf8f5);
+}
+
+.search-result-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid var(--lofi-dark, #1a1a2e);
+    object-fit: cover;
+}
+
+.search-result-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.search-result-name {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--lofi-dark, #1a1a2e);
+}
+
+.search-result-username {
+    font-size: 12px;
+    color: #888;
+}
+
+.search-no-results, .search-loading {
+    padding: 20px;
+    text-align: center;
+    color: #888;
+    font-size: 14px;
+}
+
+/* Dropdown Panel for Messages & Notifications */
+.header-dropdown-panel {
+    width: 360px;
+    max-height: 480px;
+    background: var(--lofi-white);
+    border: 2px solid var(--lofi-dark);
+    border-radius: 12px;
+    box-shadow: 4px 4px 0 var(--lofi-dark);
+    padding: 0;
+    overflow: hidden;
+}
+
+.dropdown-header-custom {
+    padding: 16px;
+    border-bottom: 2px solid var(--lofi-dark);
+    background: var(--lofi-cream);
+}
+
+.dropdown-header-custom h6 {
+    margin: 0;
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--lofi-dark);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.dropdown-body {
+    max-height: 320px;
+    overflow-y: auto;
+    padding: 8px;
+}
+
+.dropdown-footer-custom {
+    padding: 12px 16px;
+    border-top: 2px solid var(--lofi-dark);
+    background: var(--lofi-cream);
+    text-align: center;
+}
+
+.dropdown-footer-custom a {
+    color: var(--lofi-sage);
+    font-weight: 600;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.dropdown-footer-custom a:hover {
+    text-decoration: underline;
+}
+
+.empty-state {
+    padding: 32px 16px;
+    text-align: center;
+    color: var(--lofi-muted);
+}
+
+.empty-state i {
+    font-size: 32px;
+    margin-bottom: 12px;
+    opacity: 0.5;
+}
+
+.empty-state p {
+    margin: 0;
+    font-size: 14px;
+}
+
+/* Notification Item */
+.notification-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    color: inherit;
+}
+
+.notification-item:hover {
+    background: var(--lofi-cream);
+}
+
+.notification-item.unread {
+    background: rgba(148, 175, 134, 0.1);
+}
+
+.notification-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 2px solid var(--lofi-dark);
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.notification-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.notification-text {
+    font-size: 14px;
+    color: var(--lofi-dark);
+    line-height: 1.4;
+    margin-bottom: 4px;
+}
+
+.notification-text strong {
+    font-weight: 600;
+}
+
+.notification-time {
+    font-size: 12px;
+    color: var(--lofi-muted);
+}
+
+.notification-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.notification-actions .btn-sm {
+    padding: 4px 12px;
+    font-size: 12px;
+    border-radius: 6px;
+    border: 2px solid var(--lofi-dark);
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.btn-accept {
+    background: var(--lofi-sage);
+    color: white;
+}
+
+.btn-decline {
+    background: var(--lofi-white);
+    color: var(--lofi-dark);
+}
+
+/* Message Item */
+.message-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    color: inherit;
+}
+
+.message-item:hover {
+    background: var(--lofi-cream);
+}
+
+.message-item.unread {
+    background: rgba(148, 175, 134, 0.1);
+}
+
+.message-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 2px solid var(--lofi-dark);
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.message-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.message-name {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--lofi-dark);
+    margin-bottom: 2px;
+}
+
+.message-preview {
+    font-size: 13px;
+    color: var(--lofi-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.message-time {
+    font-size: 11px;
+    color: var(--lofi-muted);
+    flex-shrink: 0;
+}
+
+/* Hide dropdown toggle arrow */
+.header-icon-btn.dropdown-toggle::after {
+    display: none;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Search functionality
+    const searchToggle = document.getElementById('searchToggle');
+    const searchInput = document.getElementById('searchInput');
+    const headerSearch = document.getElementById('headerSearch');
+    const searchResults = document.getElementById('searchResults');
+    const searchResultsList = document.getElementById('searchResultsList');
+    
+    let searchTimeout = null;
+    
+    if (searchToggle && searchInput && headerSearch) {
+        searchToggle.addEventListener('click', function(e) {
+            e.stopPropagation();
+            headerSearch.classList.toggle('expanded');
+            if (headerSearch.classList.contains('expanded')) {
+                searchInput.focus();
+            } else {
+                searchResults.style.display = 'none';
+            }
+        });
+        
+        searchInput.addEventListener('input', function() {
+            const query = this.value.trim();
+            if (searchTimeout) clearTimeout(searchTimeout);
+            
+            if (query.length < 2) {
+                searchResults.style.display = 'none';
+                return;
+            }
+            
+            searchResults.style.display = 'block';
+            searchResultsList.innerHTML = '<div class="search-loading"><i class="fas fa-spinner fa-spin"></i> Đang tìm...</div>';
+            
+            searchTimeout = setTimeout(function() {
+                performSearch(query);
+            }, 300);
+        });
+        
+        document.addEventListener('click', function(e) {
+            if (!headerSearch.contains(e.target)) {
+                headerSearch.classList.remove('expanded');
+                searchResults.style.display = 'none';
+            }
+        });
+        
+        searchInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                headerSearch.classList.remove('expanded');
+                searchResults.style.display = 'none';
+            }
+        });
+    }
+    
+    async function performSearch(query) {
+        try {
+            const response = await fetch('/Home/Search?q=' + encodeURIComponent(query));
+            const data = await response.json();
+            
+            if (data.success && data.results.length > 0) {
+                searchResultsList.innerHTML = data.results.map(function(item) {
+                    return '<a href="/Profile/' + item.id + '" class="search-result-item">' +
+                        '<img src="' + item.avatar + '" alt="' + item.name + '" class="search-result-avatar">' +
+                        '<div class="search-result-info">' +
+                        '<div class="search-result-name">' + escapeHtml(item.name) + '</div>' +
+                        '<div class="search-result-username">@@' + escapeHtml(item.username) + '</div>' +
+                        '</div></a>';
+                }).join('');
+            } else {
+                searchResultsList.innerHTML = '<div class="search-no-results">Không tìm thấy kết quả</div>';
+            }
+        } catch (error) {
+            searchResultsList.innerHTML = '<div class="search-no-results">Đã xảy ra lỗi</div>';
+        }
+    }
+    
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+    
+    // Load notifications
+    loadNotifications();
+    loadMessages();
+    
+    // Refresh every 30 seconds
+    setInterval(loadNotifications, 30000);
+    setInterval(loadMessages, 30000);
+});
+
+async function loadNotifications() {
+    try {
+        const response = await fetch('/Profile/GetFriendRequests');
+        const data = await response.json();
+        
+        const badge = document.getElementById('notificationsBadge');
+        const body = document.getElementById('notificationsBody');
+        
+        if (data.success && data.requests && data.requests.length > 0) {
+            badge.textContent = data.requests.length;
+            badge.style.display = 'flex';
+            
+            body.innerHTML = data.requests.map(function(req) {
+                return '<div class="notification-item unread">' +
+                    '<img src="' + (req.avatar || '/assets/user.png') + '" class="notification-avatar">' +
+                    '<div class="notification-content">' +
+                    '<div class="notification-text"><strong>' + escapeHtml(req.name) + '</strong> đã gửi lời mời kết bạn</div>' +
+                    '<div class="notification-time">' + req.timeAgo + '</div>' +
+                    '<div class="notification-actions">' +
+                    '<button class="btn-sm btn-accept" onclick="acceptFriendRequest(' + req.userId + ')">Chấp nhận</button>' +
+                    '<button class="btn-sm btn-decline" onclick="declineFriendRequest(' + req.userId + ')">Từ chối</button>' +
+                    '</div></div></div>';
+            }).join('');
+        } else {
+            badge.textContent = '0';
+            badge.style.display = data.requests && data.requests.length > 0 ? 'flex' : 'none';
+            body.innerHTML = '<div class="empty-state"><i class="fas fa-bell-slash"></i><p>Chưa có thông báo nào</p></div>';
+        }
+    } catch (error) {
+        console.error('Error loading notifications:', error);
+    }
+}
+
+async function loadMessages() {
+    try {
+        const response = await fetch('/Message/GetRecentConversations');
+        const data = await response.json();
+        
+        const badge = document.getElementById('messagesBadge');
+        const body = document.getElementById('messagesBody');
+        
+        if (data.success && data.conversations && data.conversations.length > 0) {
+            const unreadCount = data.conversations.filter(c => c.unread).length;
+            badge.textContent = unreadCount;
+            badge.style.display = unreadCount > 0 ? 'flex' : 'none';
+            
+            body.innerHTML = data.conversations.map(function(conv) {
+                return '<a href="/Message/' + conv.userId + '" class="message-item ' + (conv.unread ? 'unread' : '') + '">' +
+                    '<img src="' + (conv.avatar || '/assets/user.png') + '" class="message-avatar">' +
+                    '<div class="message-content">' +
+                    '<div class="message-name">' + escapeHtml(conv.name) + '</div>' +
+                    '<div class="message-preview">' + escapeHtml(conv.lastMessage) + '</div>' +
+                    '</div>' +
+                    '<span class="message-time">' + conv.timeAgo + '</span>' +
+                    '</a>';
+            }).join('');
+        } else {
+            badge.textContent = '0';
+            badge.style.display = 'none';
+            body.innerHTML = '<div class="empty-state"><i class="fas fa-inbox"></i><p>Chưa có tin nhắn nào</p></div>';
+        }
+    } catch (error) {
+        console.error('Error loading messages:', error);
+    }
+}
+
+async function acceptFriendRequest(userId) {
+    try {
+        const response = await fetch('/Profile/AcceptFriendRequest', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(userId)
+        });
+        const data = await response.json();
+        if (data.success) {
+            loadNotifications();
+        }
+    } catch (error) {
+        console.error('Error accepting friend request:', error);
+    }
+}
+
+async function declineFriendRequest(userId) {
+    try {
+        const response = await fetch('/Profile/DeclineFriendRequest', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(userId)
+        });
+        const data = await response.json();
+        if (data.success) {
+            loadNotifications();
+        }
+    } catch (error) {
+        console.error('Error declining friend request:', error);
+    }
+}
+
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+</script>
