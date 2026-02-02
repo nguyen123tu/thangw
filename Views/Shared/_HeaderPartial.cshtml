@@ -20,7 +20,7 @@
                 type="text" 
                 class="header-search-input" 
                 id="searchInput"
-                placeholder="Tìm kiếm trên MTU..." 
+                placeholder="Tìm mọi người, bài viết..." 
                 aria-label="Search"
                 autocomplete="off"
             />
@@ -445,6 +445,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 headerSearch.classList.remove('expanded');
                 searchResults.style.display = 'none';
             }
+            if (e.key === 'Enter') {
+                const query = this.value.trim();
+                if (query) {
+                    window.location.href = '/Search?q=' + encodeURIComponent(query);
+                }
+            }
         });
     }
     
@@ -487,26 +493,55 @@ document.addEventListener('DOMContentLoaded', function() {
 
 async function loadNotifications() {
     try {
-        const response = await fetch('/Profile/GetFriendRequests');
+        const response = await fetch('/Notification/GetNotifications');
         const data = await response.json();
         
         const badge = document.getElementById('notificationsBadge');
         const body = document.getElementById('notificationsBody');
         
         if (data.success && data.requests && data.requests.length > 0) {
-            badge.textContent = data.requests.length;
-            badge.style.display = 'flex';
+            // Filter unread or show all? 
+            // Currently API fetches 20 recent. Badge should show unread count?
+            // Actually, we need an endpoint for unread count, or just count from this list.
+            const unreadCount = data.requests.filter(n => !n.isRead).length;
+
+            if (unreadCount > 0) {
+                badge.textContent = unreadCount;
+                badge.style.display = 'flex';
+            } else {
+                badge.style.display = 'none';
+            }
             
             body.innerHTML = data.requests.map(function(req) {
-                return '<div class="notification-item unread">' +
-                    '<img src="' + (req.avatar || '/assets/user.png') + '" class="notification-avatar">' +
-                    '<div class="notification-content">' +
-                    '<div class="notification-text"><strong>' + escapeHtml(req.name) + '</strong> đã gửi lời mời kết bạn</div>' +
-                    '<div class="notification-time">' + req.timeAgo + '</div>' +
-                    '<div class="notification-actions">' +
-                    '<button class="btn-sm btn-accept" onclick="acceptFriendRequest(' + req.userId + ')">Chấp nhận</button>' +
-                    '<button class="btn-sm btn-decline" onclick="declineFriendRequest(' + req.userId + ')">Từ chối</button>' +
-                    '</div></div></div>';
+                if (req.type === 'friend_request') {
+                    // Friend Request: Link to Profile, NO MarkAsRead (handled by Accept/Decline)
+                    return `<div class="notification-item unread">
+                        <a href="/Profile/${req.userId}" class="d-flex align-items-start text-decoration-none text-dark w-100">
+                            <img src="${req.avatar || '/assets/user.png'}" class="notification-avatar">
+                            <div class="notification-content">
+                                <div class="notification-text"><strong>${escapeHtml(req.name)}</strong> ${req.content}</div>
+                                <div class="notification-time">${req.timeAgo}</div>
+                            </div>
+                        </a>
+                        <div class="notification-actions mt-1 ps-5 ms-2">
+                            <button class="btn btn-sm btn-primary py-0 px-2 me-1" onclick="acceptFriendRequest(${req.userId})">Chấp nhận</button>
+                            <button class="btn btn-sm btn-secondary py-0 px-2" onclick="declineFriendRequest(${req.userId})">Từ chối</button>
+                        </div>
+                    </div>`;
+                } else {
+                    // Update Notification: Link to Post, Click Marks as Read
+                    const link = req.relatedId ? `/Post/Details/${req.relatedId}` : '#';
+                    const markReadAttr = !req.isRead ? `onclick="markNotificationRead(event, ${req.notificationId}, '${link}')"` : `onclick="window.location.href='${link}'"`;
+                    const hrefAttr = !req.isRead ? 'href="javascript:void(0)"' : `href="${link}"`;
+                    
+                    return `<a ${hrefAttr} ${markReadAttr} class="notification-item ${!req.isRead ? 'unread' : ''}">
+                        <img src="${req.avatar || '/assets/user.png'}" class="notification-avatar">
+                        <div class="notification-content">
+                            <div class="notification-text"><strong>${escapeHtml(req.name)}</strong> ${req.content}</div>
+                            <div class="notification-time">${req.timeAgo}</div>
+                        </div>
+                    </a>`;
+                }
             }).join('');
         } else {
             badge.textContent = '0';
@@ -588,5 +623,29 @@ function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+}
+
+async function markNotificationRead(event, notificationId, url) {
+    event.preventDefault(); // Prevent default link behavior
+    
+    // Optimistic UI update: remove unread class immediately
+    const target = event.currentTarget;
+    if (target) {
+        target.classList.remove('unread');
+    }
+
+    try {
+        // Call API to mark as read
+        await fetch('/Notification/MarkAsRead', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(notificationId)
+        });
+    } catch (error) {
+        console.error('Error marking notification read:', error);
+    }
+
+    // Navigate to destination
+    window.location.href = url;
 }
 </script>

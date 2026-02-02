@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("MTU")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+68e36604a1ef2ed53eb0924b98d733599e61fb0c")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+80f752aea8ca0ac270885c0e6a0183944453952e")]
 [assembly: System.Reflection.AssemblyProductAttribute("MTU")]
 [assembly: System.Reflection.AssemblyTitleAttribute("MTU")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

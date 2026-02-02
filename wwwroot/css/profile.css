@@ -5,36 +5,66 @@
 /* Profile Page Container */
 .profile-page-container {
   width: 100%;
-  min-height: calc(100vh - 60px);
+  height: calc(100vh - 60px);
+  overflow-y: auto;
   background: var(--lofi-cream);
   padding: 20px;
   margin-top: 60px;
 }
 
 
-.profile-sidebar {
-  position: sticky;
-  top: 80px;
+/* ============================================
+   PROFILE HEADER CARD LAYOUT
+   ============================================ */
+
+.profile-header-card {
   background: var(--lofi-white);
   border: 3px solid var(--lofi-dark);
+  border-radius: 15px;
   box-shadow: 8px 8px 0 var(--lofi-dark);
-  padding: 32px 24px;
-  text-align: left;
-  height: fit-content;
-  max-height: calc(100vh - 100px);
-  overflow-y: auto;
-}
-
-/* Avatar Section */
-.profile-avatar-section {
+  overflow: hidden;
   margin-bottom: 24px;
+  position: relative;
 }
 
-.profile-avatar-wrapper-large {
+/* Cover Image */
+.profile-cover-section {
+  width: 100%;
+  height: 250px;
+  background: var(--lofi-sage);
   position: relative;
-  width: 180px;
-  height: 180px;
-  margin: 0 auto;
+  overflow: hidden;
+  border-bottom: 3px solid var(--lofi-dark);
+}
+
+.profile-cover-section img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Info Section (Avatar + Details) */
+.profile-info-section {
+  padding: 0 32px 24px 32px;
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  gap: 24px;
+  margin-top: -60px;
+  /* Pull content up to overlap cover */
+  pointer-events: none;
+  /* Allow clicks to pass through to cover button */
+}
+
+/* Avatar Overlap */
+.profile-avatar-wrapper-overlap {
+  position: relative;
+  width: 160px;
+  height: 160px;
+  flex-shrink: 0;
+  z-index: 2;
+  pointer-events: auto;
+  /* Restore clicks */
 }
 
 .profile-avatar-large {
@@ -43,168 +73,273 @@
   border-radius: 50%;
   border: 6px solid var(--lofi-white);
   outline: 3px solid var(--lofi-dark);
-  box-shadow: 6px 6px 0 var(--lofi-dark);
+  box-shadow: 4px 4px 0 var(--lofi-dark);
   object-fit: cover;
-  background: var(--lofi-sage);
+  background: var(--lofi-cream);
 }
 
-.edit-avatar-btn-large {
+.edit-avatar-btn-overlap {
   position: absolute;
-  bottom: 10px;
-  right: 10px;
-  width: 48px;
-  height: 48px;
+  bottom: 5px;
+  right: 5px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   background: var(--lofi-white);
-  border: 3px solid var(--lofi-dark);
+  border: 2px solid var(--lofi-dark);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 3px 3px 0 var(--lofi-dark);
+  box-shadow: 2px 2px 0 var(--lofi-dark);
   transition: all 0.2s ease;
-  opacity: 0;
-  visibility: hidden;
-  font-size: 18px;
-  color: var(--lofi-dark);
-}
-
-.profile-avatar-wrapper-large:hover .edit-avatar-btn-large {
-  opacity: 1;
-  visibility: visible;
-}
-
-.edit-avatar-btn-large:hover {
-  transform: translateY(2px);
-  box-shadow: 1px 1px 0 var(--lofi-dark);
-}
-
-/* Sidebar Info */
-.profile-sidebar-info {
-  margin-bottom: 24px;
-}
-
-.profile-sidebar-name {
-  font-size: 28px;
-  font-weight: 700;
-  color: var(--lofi-dark);
-  margin-bottom: 8px;
-  line-height: 1.2;
-}
-
-.profile-sidebar-meta {
-  font-size: 14px;
-  color: var(--lofi-muted);
-  margin-bottom: 12px;
-}
-
-.profile-sidebar-bio {
-  font-size: 15px;
-  color: var(--lofi-dark);
-  line-height: 1.5;
-  margin-top: 12px;
-}
-
-.profile-placeholder-text {
-  color: var(--lofi-muted);
-  font-style: italic;
-}
-
-/* Sidebar Details - Location, Gender, Faculty */
-.profile-sidebar-details {
-  margin-top: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.sidebar-detail-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 14px;
-  color: var(--lofi-dark);
-}
-
-.sidebar-detail-item i {
-  width: 20px;
-  text-align: center;
-  color: var(--lofi-sage);
   font-size: 16px;
-}
-
-.sidebar-detail-item span {
-  color: var(--lofi-muted);
-}
-
-/* Sidebar Actions */
-.profile-sidebar-actions {
-  margin-bottom: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.btn-profile-primary,
-.btn-profile-secondary {
-  width: 100%;
-  padding: 14px 20px;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 15px;
-  cursor: pointer;
-  border: 3px solid var(--lofi-dark);
-  box-shadow: 4px 4px 0 var(--lofi-dark);
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-
-.btn-profile-primary {
-  background: var(--lofi-sage);
   color: var(--lofi-dark);
 }
 
-.btn-profile-secondary {
-  background: var(--lofi-white);
-  color: var(--lofi-dark);
-}
-
-.btn-profile-primary:hover,
-.btn-profile-secondary:hover {
-  transform: translateY(4px);
+.edit-avatar-btn-overlap:hover {
+  transform: translateY(2px);
   box-shadow: none;
 }
 
-/* Sidebar Stats */
-.profile-sidebar-stats {
+/* Details Wrapper */
+.profile-details-wrapper {
+  flex: 1;
   display: flex;
-  justify-content: space-around;
-  padding-top: 20px;
-  border-top: 2px solid var(--lofi-dark);
+  justify-content: space-between;
+  align-items: flex-end;
+  padding-bottom: 10px;
+  padding-top: 70px;
+  /* Space for hidden part of avatar due to margin-top */
+  pointer-events: none;
+  /* Ensure wrapper doesn't block lower layers */
 }
 
-.stat-item {
+/* Space for hidden part of avatar due to margin-top */
+.profile-text-info {
   display: flex;
   flex-direction: column;
-  align-items: center;
   gap: 4px;
+  pointer-events: auto;
+  /* Restore text selection/clicks */
 }
 
-.stat-value {
-  font-size: 24px;
-  font-weight: 700;
+.profile-name {
+  font-size: 38px;
+  /* Larger */
+  font-weight: 900;
+  /* Bolder */
+  color: var(--lofi-dark);
+  line-height: 1.1;
+  margin-bottom: 8px;
+  letter-spacing: -0.5px;
+  /* Tighter tracking */
+  text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.05);
+  /* Subtle depth */
+}
+
+.profile-role {
+  font-size: 16px;
+  color: #7f8c8d;
+  /* Explicit lighter grey */
+  margin: 0 0 2px 0;
+  font-weight: 600;
+}
+
+.profile-location {
+  font-size: 14px;
+  color: #95a5a6;
+  /* Even lighter */
+  margin-top: 4px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.profile-actions-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 5px;
+  align-items: center;
+  /* Ensure vertical alignment */
+  pointer-events: auto;
+  /* Restore clicks on buttons */
+}
+
+/* Primary Action Pill (Edit) */
+.btn-action-pill {
+  padding: 10px 24px;
+  border-radius: 50px;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  border: 2px solid var(--lofi-dark);
+  box-shadow: 3px 3px 0 var(--lofi-dark);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--lofi-sage);
   color: var(--lofi-dark);
 }
 
-.stat-label {
-  font-size: 12px;
-  color: var(--lofi-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+.btn-action-pill:hover {
+  transform: translateY(2px);
+  box-shadow: 1px 1px 0 var(--lofi-dark);
+  background: #95a58a;
+  /* Slightly darker sage */
 }
+
+/* Secondary Action Icon (Settings) */
+.btn-action-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 2px solid var(--lofi-dark);
+  background: var(--lofi-white);
+  color: var(--lofi-dark);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  box-shadow: 3px 3px 0 var(--lofi-dark);
+  transition: all 0.2s ease;
+}
+
+.btn-action-icon:hover {
+  transform: translateY(2px);
+  box-shadow: 1px 1px 0 var(--lofi-dark);
+  background: var(--lofi-cream);
+}
+
+
+/* Tags Row */
+.profile-tags-row {
+  padding: 0 32px 24px 32px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.profile-mini-tag {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: var(--lofi-cream);
+  border: 1px solid var(--lofi-dark);
+  color: var(--lofi-muted);
+  font-weight: 600;
+}
+
+/* Tabs Override for Header Card (Pill Style) */
+.profile-tabs-new {
+  border-top: none;
+  border-bottom: none;
+  background: var(--lofi-white);
+  padding: 16px 24px;
+  display: flex;
+  gap: 12px;
+  /* Space between pills */
+  justify-content: flex-start;
+  /* Left align pills */
+  flex-wrap: wrap;
+}
+
+.profile-tab-new {
+  font-size: 15px;
+  padding: 10px 20px;
+  color: var(--lofi-muted);
+  background: var(--lofi-cream);
+  /* Default pill background */
+  border: 2px solid transparent;
+  /* Reserve space for border */
+  border-radius: 50px;
+  /* Pill shape */
+  font-weight: 600;
+  transition: all 0.2s ease;
+  bottom: 0;
+  /* Reset previous */
+  flex: initial;
+  /* Don't stretch */
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.profile-tab-new:hover {
+  color: var(--lofi-dark);
+  background: #e8e8e3;
+  /* Slightly darker cream */
+  transform: translateY(-2px);
+}
+
+.profile-tab-new.active {
+  color: var(--lofi-dark);
+  background: var(--lofi-sage);
+  border: 2px solid var(--lofi-dark);
+  box-shadow: 2px 2px 0 var(--lofi-dark);
+  /* Pop effect */
+  border-bottom-color: var(--lofi-dark);
+  /* Reset override */
+}
+
+/* Content Area */
+.profile-content-area {
+  width: 100%;
+  min-height: 300px;
+}
+
+/* Override Main Panel */
+.profile-main-panel {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  overflow: visible;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .profile-info-section {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    margin-top: -50px;
+    gap: 16px;
+  }
+
+  .profile-details-wrapper {
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding-top: 0;
+    width: 100%;
+  }
+
+  .profile-actions-row {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .profile-tags-row {
+    justify-content: center;
+  }
+
+  .profile-cover-section {
+    height: 180px;
+  }
+
+  .profile-avatar-wrapper-overlap {
+    width: 120px;
+    height: 120px;
+  }
+
+  .profile-name {
+    font-size: 26px;
+  }
+}
+
 
 /* ============================================
    RIGHT PANEL - Cover, Tabs, Content
@@ -317,6 +452,7 @@
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -488,6 +624,23 @@
   flex-direction: column;
   align-items: center;
   gap: 12px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  /* Bouncy spring */
+  cursor: default;
+  padding: 8px;
+  border-radius: 8px;
+}
+
+.stat-item:hover {
+  transform: scale(1.1);
+  background: rgba(0, 0, 0, 0.02);
 }
 
 .friend-card-new:hover {

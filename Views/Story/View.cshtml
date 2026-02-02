@@ -491,10 +491,13 @@
             }
 
             <!-- View count -->
-            <div class="view-count">
-                <i class="fa-solid fa-eye"></i>
-                <span>@Model.ViewCount</span>
-            </div>
+            @if (isOwnStory) 
+            {
+                <div class="view-count">
+                    <i class="fa-solid fa-eye"></i>
+                    <span>@Model.ViewCount</span>
+                </div>
+            }
 
             <!-- Navigation areas -->
             @if (prevStoryId.HasValue)

@@ -11,15 +11,18 @@ namespace MTU.Controllers
     {
         private readonly IPostService _postService;
         private readonly IInteractionService _interactionService;
+        private readonly IAuthService _authService;
         private readonly ILogger<PostController> _logger;
 
         public PostController(
             IPostService postService,
             IInteractionService interactionService,
+            IAuthService authService,
             ILogger<PostController> logger)
         {
             _postService = postService;
             _interactionService = interactionService;
+            _authService = authService;
             _logger = logger;
         }
 
@@ -40,17 +43,19 @@ namespace MTU.Controllers
                 }
 
                 // Debug log
-                _logger.LogInformation("Create post - Content: '{Content}', HasImage: {HasImage}", 
-                    dto.Content ?? "(null)", dto.Image != null);
+                _logger.LogInformation("Create post - Content: '{Content}', HasImage: {HasImage}, HasVideo: {HasVideo}, HasFile: {HasFile}", 
+                    dto.Content ?? "(null)", dto.Image != null, dto.Video != null, dto.Attachment != null);
 
                 // Kiểm tra nội dung - trim để loại bỏ khoảng trắng
                 var content = dto.Content?.Trim();
                 var hasContent = !string.IsNullOrEmpty(content);
                 var hasImage = dto.Image != null && dto.Image.Length > 0;
+                var hasVideo = dto.Video != null && dto.Video.Length > 0;
+                var hasAttachment = dto.Attachment != null && dto.Attachment.Length > 0;
 
-                if (!hasContent && !hasImage)
+                if (!hasContent && !hasImage && !hasVideo && !hasAttachment)
                 {
-                    TempData["ErrorMessage"] = "Vui lòng nhập nội dung hoặc chọn ảnh";
+                    TempData["ErrorMessage"] = "Vui lòng nhập nội dung, hoặc tải ảnh/video/tài liệu lên";
                     return RedirectToAction("Index", "Home");
                 }
 
@@ -229,6 +234,118 @@ namespace MTU.Controllers
                 _logger.LogError(ex, "Error deleting post {PostId}", id);
                 return Json(new { success = false, message = "Đã xảy ra lỗi khi xóa bài viết" });
             }
+        }
+        /// <summary>
+        /// Xem chi tiết bài viết
+        /// </summary>
+        [HttpGet]
+        public async Task<IActionResult> Details(int id)
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int currentUserId))
+            {
+                currentUserId = 0; 
+                return RedirectToAction("Login", "Home");
+            }
+
+            // Populate Sidebar User Data
+            var currentUser = await _authService.GetUserByIdAsync(currentUserId);
+            if (currentUser != null)
+            {
+                ViewBag.CurrentUserAvatar = currentUser.Avatar ?? "/assets/user.png";
+                var fullName = $"{currentUser.FirstName} {currentUser.LastName}".Trim();
+                ViewBag.CurrentUserFullName = string.IsNullOrWhiteSpace(fullName) ? currentUser.Username : fullName;
+            }
+
+            var post = await _postService.GetPostByIdAsync(id, currentUserId);
+            if (post == null)
+            {
+                return NotFound();
+            }
+
+            return View(post);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdatePrivacy(int postId, string privacy)
+        {
+            try
+            {
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+                if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int currentUserId))
+                {
+                    return Json(new { success = false, message = "Chưa đăng nhập" });
+                }
+
+                var result = await _postService.UpdatePrivacyAsync(postId, privacy, currentUserId);
+
+                if (result)
+                {
+                    return Json(new { success = true, message = "Đã cập nhật quyền riêng tư" });
+                }
+                else
+                {
+                    return Json(new { success = false, message = "Không thể cập nhật quyền riêng tư. Bạn không có quyền hoặc bài viết không tồn tại." });
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating privacy for post {PostId}", postId);
+                return Json(new { success = false, message = "Lỗi hệ thống" });
+            }
+        }
+
+
+        /// <summary>
+        /// Lưu hoặc bỏ lưu bài viết (Ajax)
+        /// </summary>
+        [HttpPost]
+        [IgnoreAntiforgeryToken]
+        public async Task<IActionResult> Save(int postId)
+        {
+            try
+            {
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+                if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int currentUserId))
+                {
+                    return Json(new { success = false, message = "User not authenticated" });
+                }
+
+                var isSaved = await _interactionService.ToggleSaveAsync(postId, currentUserId);
+
+                return Json(new { success = true, isSaved = isSaved });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi bật/tắt lưu bài viết với PostId = {PostId}", postId);
+                return Json(new { success = false, message = "Không thể xử lý thao tác lưu bài viết" });
+
+            }
+        }
+
+        /// <summary>
+        /// Xem danh sách bài viết đã lưu
+        /// </summary>
+        [HttpGet]
+        public async Task<IActionResult> Saved()
+        {
+             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int currentUserId))
+            {
+                return RedirectToAction("Login", "Home");
+            }
+
+            // Populate Sidebar User Data
+            var currentUser = await _authService.GetUserByIdAsync(currentUserId);
+            if (currentUser != null)
+            {
+                ViewBag.CurrentUserAvatar = currentUser.Avatar ?? "/assets/user.png";
+                var fullName = $"{currentUser.FirstName} {currentUser.LastName}".Trim();
+                ViewBag.CurrentUserFullName = string.IsNullOrWhiteSpace(fullName) ? currentUser.Username : fullName;
+            }
+
+            var savedPosts = await _postService.GetSavedPostsAsync(1, 20, currentUserId);
+            return View(savedPosts);
         }
     }
 }

@@ -47,7 +47,22 @@ namespace MTU.Controllers
             }
 
             SetCurrentUserViewBag(currentUser);
-            var feed = await _postService.GetFeedAsync(1, 20, currentUser.UserId);
+            var feed = await _postService.GetFriendFeedAsync(1, 20, currentUser.UserId);
+            return View(feed);
+        }
+
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> Explore(int page = 1)
+        {
+            var currentUser = await GetCurrentUserAsync();
+            if (currentUser == null)
+            {
+                return RedirectToAction("Login");
+            }
+
+            SetCurrentUserViewBag(currentUser);
+            var feed = await _postService.GetExploreFeedAsync(page, 20, currentUser.UserId);
             return View(feed);
         }
 

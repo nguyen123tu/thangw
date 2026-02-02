@@ -10,17 +10,21 @@ namespace MTU.Services
     {
         private readonly IPostRepository _postRepository;
         private readonly ILikeRepository _likeRepository;
+        private readonly ISavedPostRepository _savedPostRepository;
         private readonly IWebHostEnvironment _environment;
         private readonly ILogger<PostService> _logger;
+
 
         public PostService(
             IPostRepository postRepository,
             ILikeRepository likeRepository,
+            ISavedPostRepository savedPostRepository,
             IWebHostEnvironment environment,
             ILogger<PostService> logger)
         {
             _postRepository = postRepository;
             _likeRepository = likeRepository;
+            _savedPostRepository = savedPostRepository;
             _environment = environment;
             _logger = logger;
         }
@@ -60,9 +64,9 @@ namespace MTU.Services
                 var hasContent = !string.IsNullOrEmpty(content);
                 var hasImage = dto.Image != null && dto.Image.Length > 0;
 
-                if (!hasContent && !hasImage)
+                if (!hasContent && !hasImage && dto.Video == null && dto.Attachment == null)
                 {
-                    throw new ArgumentException("Vui lòng nhập nội dung hoặc chọn ảnh");
+                    throw new ArgumentException("Vui lòng nhập nội dung, hoặc tải ảnh/video/tài liệu lên");
                 }
 
                 string? imageUrl = null;
@@ -71,25 +75,49 @@ namespace MTU.Services
                     imageUrl = await SaveImageAsync(dto.Image!);
                 }
 
+                string? videoUrl = null;
+                if (dto.Video != null && dto.Video.Length > 0)
+                {
+                    videoUrl = await SaveVideoAsync(dto.Video);
+                }
+
+                string? fileUrl = null;
+                string? fileName = null;
+                if (dto.Attachment != null && dto.Attachment.Length > 0)
+                {
+                    var fileInfo = await SaveFileAsync(dto.Attachment);
+                    fileUrl = fileInfo.Url;
+                    fileName = fileInfo.Name;
+                }
+
                 var post = new Post
                 {
                     UserId = currentUserId,
                     Content = content ?? "",
                     ImageUrl = imageUrl,
+                    VideoUrl = videoUrl,
+                    FileUrl = fileUrl,
+                    FileName = fileName,
                     CreatedAt = DateTime.Now,
                     UpdatedAt = DateTime.Now,
                     Privacy = dto.Privacy ?? "public",
                     IsDeleted = false
-                };                var createdPost = await _postRepository.CreateAsync(post);                var postWithUser = await _postRepository.GetByIdAsync(createdPost.PostId);
+                };
+                
+                var createdPost = await _postRepository.CreateAsync(post);
+                var postWithUser = await _postRepository.GetByIdAsync(createdPost.PostId);
                 
                 if (postWithUser == null)
                 {
                     throw new InvalidOperationException("Failed to retrieve created post");
-                }                var postDtos = await MapPostsToDtos(new List<Post> { postWithUser }, currentUserId);
+                }
+                
+                var postDtos = await MapPostsToDtos(new List<Post> { postWithUser }, currentUserId);
                 return postDtos.First();
             }
             catch (ArgumentException)
-            {                throw;
+            {
+                throw;
             }
             catch (Microsoft.EntityFrameworkCore.DbUpdateException ex)
             {
@@ -126,12 +154,16 @@ namespace MTU.Services
                 {
                     _logger.LogWarning("Post {PostId} not found for deletion", postId);
                     return false;
-                }                if (post.UserId != currentUserId)
+                }
+
+                if (post.UserId != currentUserId)
                 {
                     _logger.LogWarning("User {UserId} attempted to delete post {PostId} owned by {OwnerId}", 
                         currentUserId, postId, post.UserId);
                     return false;
-                }                await _postRepository.DeleteAsync(postId);
+                }
+
+                await _postRepository.DeleteAsync(postId);
                 
                 _logger.LogInformation("Post {PostId} deleted successfully by user {UserId}", postId, currentUserId);
                 return true;
@@ -143,9 +175,60 @@ namespace MTU.Services
             }
         }
 
+        public async Task<List<PostDto>> GetFriendFeedAsync(int pageNumber, int pageSize, int currentUserId)
+        {
+            try
+            {
+                var posts = await _postRepository.GetFriendPostsAsync(currentUserId, pageNumber, pageSize);
+                return await MapPostsToDtos(posts, currentUserId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving friend feed for user {UserId}", currentUserId);
+                return new List<PostDto>();
+            }
+        }
+
+        public async Task<List<PostDto>> GetExploreFeedAsync(int pageNumber, int pageSize, int currentUserId)
+        {
+            try
+            {
+                var posts = await _postRepository.GetExplorePostsAsync(currentUserId, pageNumber, pageSize);
+                return await MapPostsToDtos(posts, currentUserId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving explore feed for user {UserId}", currentUserId);
+                return new List<PostDto>();
+            }
+
+
+        }
+
+        public async Task<List<PostDto>> GetSavedPostsAsync(int pageNumber, int pageSize, int currentUserId)
+        {
+            try
+            {
+                var posts = await _savedPostRepository.GetSavedPostsAsync(currentUserId, pageNumber, pageSize);
+                return await MapPostsToDtos(posts, currentUserId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving saved posts for user {UserId}", currentUserId);
+                return new List<PostDto>();
+            }
+        }
+
         private async Task<List<PostDto>> MapPostsToDtos(List<Post> posts, int? currentUserId)
         {
             var postDtos = new List<PostDto>();
+            HashSet<int> savedPostIds = new HashSet<int>();
+            
+            if (currentUserId.HasValue)
+            {
+                var ids = await _savedPostRepository.GetSavedPostIdsAsync(currentUserId.Value);
+                savedPostIds = new HashSet<int>(ids);
+            }
 
             foreach (var post in posts)
             {
@@ -169,10 +252,14 @@ namespace MTU.Services
                     AuthorAvatar = post.User.Avatar ?? "/assets/user.png",
                     Content = post.Content ?? string.Empty,
                     ImageUrl = post.ImageUrl,
+                    VideoUrl = post.VideoUrl,
+                    FileUrl = post.FileUrl, 
+                    FileName = post.FileName,
                     TimeAgo = GetTimeAgo(post.CreatedAt),
                     LikeCount = likeCount,
                     CommentCount = commentCount,
                     IsLikedByCurrentUser = isLiked,
+                    IsSavedByCurrentUser = savedPostIds.Contains(post.PostId),
                     IsOwnPost = currentUserId.HasValue && post.UserId == currentUserId.Value
                 };
 
@@ -183,24 +270,102 @@ namespace MTU.Services
         }
 
         private async Task<string> SaveImageAsync(IFormFile image)
-        {            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
+        {
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
             var extension = Path.GetExtension(image.FileName).ToLowerInvariant();
             
             if (!allowedExtensions.Contains(extension))
             {
-                throw new ArgumentException("Invalid file type. Only jpg, jpeg, png, and gif are allowed.");
-            }            if (image.Length > 5 * 1024 * 1024)
+                throw new ArgumentException("Invalid image type. Only jpg, jpeg, png, gif, and webp are allowed.");
+            }
+            
+            if (image.Length > 10 * 1024 * 1024) // 10MB limit
             {
-                throw new ArgumentException("File size exceeds maximum limit of 5MB.");
-            }            var uniqueFileName = $"{Guid.NewGuid()}{extension}";            var uploadsPath = Path.Combine(_environment.WebRootPath, "uploads");
+                throw new ArgumentException("Image size exceeds maximum limit of 10MB.");
+            }
+
+            var uniqueFileName = $"{Guid.NewGuid()}{extension}";
+            var uploadsPath = Path.Combine(_environment.WebRootPath, "uploads", "images");
+            
+            // Ensure directory exists
             if (!Directory.Exists(uploadsPath))
             {
                 Directory.CreateDirectory(uploadsPath);
-            }            var filePath = Path.Combine(uploadsPath, uniqueFileName);
+            }
+
+            var filePath = Path.Combine(uploadsPath, uniqueFileName);
             using (var stream = new FileStream(filePath, FileMode.Create))
             {
                 await image.CopyToAsync(stream);
-            }            return $"/uploads/{uniqueFileName}";
+            }
+
+            return $"/uploads/images/{uniqueFileName}";
+        }
+
+        private async Task<string> SaveVideoAsync(IFormFile video)
+        {
+            var allowedExtensions = new[] { ".mp4", ".mov", ".avi", ".mkv", ".webm" };
+            var extension = Path.GetExtension(video.FileName).ToLowerInvariant();
+            
+            if (!allowedExtensions.Contains(extension))
+            {
+                throw new ArgumentException("Invalid video type. Only mp4, mov, avi, mkv, and webm are allowed.");
+            }
+            
+            if (video.Length > 100 * 1024 * 1024) // 100MB limit
+            {
+                throw new ArgumentException("Video size exceeds maximum limit of 100MB.");
+            }
+
+            var uniqueFileName = $"{Guid.NewGuid()}{extension}";
+            var uploadsPath = Path.Combine(_environment.WebRootPath, "uploads", "videos");
+            
+            if (!Directory.Exists(uploadsPath))
+            {
+                Directory.CreateDirectory(uploadsPath);
+            }
+
+            var filePath = Path.Combine(uploadsPath, uniqueFileName);
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await video.CopyToAsync(stream);
+            }
+
+            return $"/uploads/videos/{uniqueFileName}";
+        }
+
+        private async Task<(string Url, string Name)> SaveFileAsync(IFormFile file)
+        {
+            var allowedExtensions = new[] { ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx", ".txt", ".zip", ".rar" };
+            var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+            
+            if (!allowedExtensions.Contains(extension))
+            {
+                throw new ArgumentException($"Invalid file type ({extension}). Allowed types: pdf, office docs, txt, zip, rar.");
+            }
+            
+            if (file.Length > 20 * 1024 * 1024) // 20MB limit
+            {
+                throw new ArgumentException("File size exceeds maximum limit of 20MB.");
+            }
+
+            // Keep original filename but ensure uniqueness prefix
+            var cleanFileName = Path.GetFileName(file.FileName); // simple check
+            var uniqueFileName = $"{Guid.NewGuid()}_{cleanFileName}";
+            var uploadsPath = Path.Combine(_environment.WebRootPath, "uploads", "files");
+            
+            if (!Directory.Exists(uploadsPath))
+            {
+                Directory.CreateDirectory(uploadsPath);
+            }
+
+            var filePath = Path.Combine(uploadsPath, uniqueFileName);
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            return ($"/uploads/files/{uniqueFileName}", cleanFileName);
         }
 
         private string GetTimeAgo(DateTime dateTime)
@@ -221,6 +386,66 @@ namespace MTU.Services
                 return $"{(int)(timeSpan.TotalDays / 30)}mo ago";
             
             return $"{(int)(timeSpan.TotalDays / 365)}y ago";
+        }
+
+        public async Task<List<PostDto>> SearchPostsAsync(string query, int currentUserId, int limit = 20)
+        {
+            try
+            {
+                var posts = await _postRepository.SearchAsync(query, limit);
+                return await MapPostsToDtos(posts, currentUserId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error searching posts with query '{Query}'", query);
+                return new List<PostDto>();
+            }
+        }
+        public async Task<PostDto?> GetPostByIdAsync(int postId, int currentUserId)
+        {
+            try
+            {
+                var post = await _postRepository.GetByIdAsync(postId);
+                if (post == null) return null;
+
+                var dtos = await MapPostsToDtos(new List<Post> { post }, currentUserId);
+                return dtos.FirstOrDefault();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving post {PostId}", postId);
+                return null;
+            }
+        }
+
+        public async Task<bool> UpdatePrivacyAsync(int postId, string privacy, int currentUserId)
+        {
+            try
+            {
+                var post = await _postRepository.GetByIdAsync(postId);
+                if (post == null) return false;
+
+                if (post.UserId != currentUserId)
+                {
+                    _logger.LogWarning("User {UserId} attempted to update privacy of post {PostId} owner by {OwnerId}", 
+                        currentUserId, postId, post.UserId);
+                    return false;
+                }
+
+                if (privacy != "public" && privacy != "friends" && privacy != "private")
+                {
+                    return false;
+                }
+
+                await _postRepository.UpdatePrivacyAsync(postId, privacy);
+                _logger.LogInformation("Privacy of post {PostId} updated to {Privacy} by user {UserId}", postId, privacy, currentUserId);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating privacy for post {PostId}", postId);
+                return false;
+            }
         }
     }
 }

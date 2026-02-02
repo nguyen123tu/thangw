@@ -7,86 +7,56 @@
 
 <div class="profile-page-container">
     <div class="container-fluid">
-        <div class="row">
-            <!-- LEFT COLUMN: Avatar, Name, Bio, Actions -->
-            <div class="col-md-4 col-lg-3">
-                <div class="profile-sidebar">
-                    <!-- Avatar -->
-                    <div class="profile-avatar-section">
-                        <div class="profile-avatar-wrapper-large">
-                            <img src="@(string.IsNullOrEmpty(Model.Avatar) ? "/assets/user.png" : Model.Avatar)" alt="@Model.FullName" class="profile-avatar-large" id="avatarPreview">
-                            @if (Model.IsOwnProfile)
-                            {
-                                <input type="file" id="avatarInput" accept="image/*" style="display: none;" />
-                                <button class="edit-avatar-btn-large" onclick="document.getElementById('avatarInput').click()">
-                                    <i class="fa-solid fa-camera"></i>
-                                </button>
-                            }
-                        </div>
-                    </div>
 
-                    <!-- Name & Bio -->
-                    <div class="profile-sidebar-info">
-                        <h1 class="profile-sidebar-name">@Model.FullName</h1>
+        <!-- Unified Profile Header Card -->
+        <div class="profile-header-card">
+            <!-- Cover Image Section -->
+            <div class="profile-cover-section">
+                 <img src="@(string.IsNullOrEmpty(Model.CoverImage) ? "/assets/bg.jpg" : Model.CoverImage)" alt="Cover Image" id="coverImagePreview" onerror="this.src='/assets/bg.jpg'">
+                 @if (Model.IsOwnProfile)
+                 {
+                     <input type="file" id="coverFileInput" accept="image/*" style="display: none;" />
+                     <button class="edit-cover-btn-new" onclick="document.getElementById('coverFileInput').click()">
+                         <i class="fa-solid fa-camera"></i>
+                         <span>Chỉnh sửa ảnh bìa</span>
+                     </button>
+                 }
+            </div>
+
+            <!-- Profile Info Section (Avatar overlaps cover) -->
+            <div class="profile-info-section">
+                <div class="profile-avatar-wrapper-overlap">
+                    <img src="@(string.IsNullOrEmpty(Model.Avatar) ? "/assets/user.png" : Model.Avatar)" alt="@Model.FullName" class="profile-avatar-large" id="avatarPreview">
+                    @if (Model.IsOwnProfile)
+                    {
+                        <input type="file" id="avatarInput" accept="image/*" style="display: none;" />
+                        <button class="edit-avatar-btn-overlap" onclick="document.getElementById('avatarInput').click()">
+                            <i class="fa-solid fa-camera"></i>
+                        </button>
+                    }
+                </div>
+
+                <div class="profile-details-wrapper">
+                    <div class="profile-text-info">
+                        <h1 class="profile-name">@Model.FullName</h1>
                         @if (Model.Student != null && !string.IsNullOrEmpty(Model.Student.Class))
                         {
-                            <p class="profile-sidebar-meta">@Model.Student.Class</p>
+                            <p class="profile-role">@Model.Student.Class</p>
                         }
-                        @if (!string.IsNullOrEmpty(Model.Bio))
+                        @if (!string.IsNullOrEmpty(Model.Location))
                         {
-                            <p class="profile-sidebar-bio">@Model.Bio</p>
+                             <p class="profile-location"><i class="fa-solid fa-location-dot"></i> @Model.Location</p>
                         }
-                        else if (Model.IsOwnProfile)
-                        {
-                            <p class="profile-sidebar-bio profile-placeholder-text">
-                                Chưa cập nhật giới thiệu
-                            </p>
-                        }
-                        
-                        <!-- Quick Info Items -->
-                        <div class="profile-sidebar-details">
-                            @if (Model.Student != null && !string.IsNullOrEmpty(Model.Student.Gender))
-                            {
-                                <div class="sidebar-detail-item">
-                                    @if (Model.Student.Gender == "Nam")
-                                    {
-                                        <i class="fa-solid fa-mars"></i>
-                                    }
-                                    else if (Model.Student.Gender == "Nữ")
-                                    {
-                                        <i class="fa-solid fa-venus"></i>
-                                    }
-                                    else
-                                    {
-                                        <i class="fa-solid fa-genderless"></i>
-                                    }
-                                    <span>@Model.Student.Gender</span>
-                                </div>
-                            }
-                            @if (!string.IsNullOrEmpty(Model.Location))
-                            {
-                                <div class="sidebar-detail-item">
-                                    <i class="fa-solid fa-location-dot"></i>
-                                    <span>@Model.Location</span>
-                                </div>
-                            }
-                            @if (Model.Student != null && !string.IsNullOrEmpty(Model.Student.Faculty))
-                            {
-                                <div class="sidebar-detail-item">
-                                    <i class="fa-solid fa-graduation-cap"></i>
-                                    <span>@Model.Student.Faculty</span>
-                                </div>
-                            }
-                        </div>
                     </div>
 
-                    <!-- Action Buttons -->
-                    <div class="profile-sidebar-actions">
+                    <div class="profile-actions-row">
                         @if (Model.IsOwnProfile)
                         {
-                            <button class="btn-profile-primary" onclick="openEditProfileModal()">
-                                <i class="fa-solid fa-pen"></i>
-                                Chỉnh sửa hồ sơ
+                            <button class="btn-action-pill" onclick="openEditProfileModal()">
+                                <i class="fa-solid fa-pen"></i> Chỉnh sửa
+                            </button>
+                            <button class="btn-action-icon" onclick="location.href='/Home/Settings'" title="Cài đặt">
+                                <i class="fa-solid fa-gear"></i>
                             </button>
                         }
                         else
@@ -122,173 +92,144 @@
                             }
                         }
                     </div>
-
-                    <!-- Quick Info -->
-                    <div class="profile-sidebar-stats">
-                        <div class="stat-item">
-                            <span class="stat-value">@Model.Posts.Count</span>
-                            <span class="stat-label">Bài viết</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-value">@Model.FriendCount</span>
-                            <span class="stat-label">Bạn bè</span>
-                        </div>
-                    </div>
                 </div>
             </div>
+            
+            <!-- Skills/Tags Row (Optional) -->
+            @if (!string.IsNullOrEmpty(Model.Interests))
+            {
+                 <div class="profile-tags-row">
+                     @{
+                         var interests = Model.Interests.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Take(5);
+                         foreach (var interest in interests)
+                         {
+                             <span class="profile-mini-tag">@interest</span>
+                         }
+                     }
+                 </div>
+            }
 
-            <!-- RIGHT PANEL: Tabs, Posts -->
-            <div class="col-md-8 col-lg-9">
-                <div class="profile-main-panel">
-                    <!-- Tabs -->
-                    <div class="profile-tabs-new">
-                        <button class="profile-tab-new active" data-tab="posts">
-                            <i class="fa-solid fa-newspaper"></i>
-                            Bài viết
-                        </button>
-                        <button class="profile-tab-new" data-tab="about">
-                            <i class="fa-solid fa-user"></i>
-                            Giới thiệu
-                        </button>
-                        <button class="profile-tab-new" data-tab="friends">
-                            <i class="fa-solid fa-user-group"></i>
-                            Bạn bè (@Model.FriendCount)
-                        </button>
-                    </div>
-
-                    <!-- Tab Content -->
-                    <div class="profile-tab-content-new active" id="tab-posts">
-                        @if (Model.Posts.Count == 0)
-                        {
-                            <div class="profile-empty-state">
-                                <i class="fa-solid fa-newspaper"></i>
-                                <h3>Chưa có bài viết</h3>
-                                <p>@(Model.IsOwnProfile ? "Bạn chưa đăng bài viết nào." : "Người dùng này chưa đăng bài viết nào.")</p>
-                            </div>
-                        }
-                        else
-                        {
-                            <div class="profile-posts-list">
-                                @foreach (var post in Model.Posts)
-                                {
-                                    @await Html.PartialAsync("_PostCardPartial", post)
-                                }
-                            </div>
-                        }
-                    </div>
-
-                    <div class="profile-tab-content-new" id="tab-about">
-                        <div class="about-cards">
-                            @if (Model.Student != null)
-                            {
-                                <div class="info-card-new">
-                                    <h3><i class="fa-solid fa-graduation-cap"></i> Thông tin sinh viên</h3>
-                                    <div class="info-grid-new">
-                                        <div class="info-item-new">
-                                            <span class="info-label-new">Lớp sinh hoạt</span>
-                                            <span class="info-value-new">@(string.IsNullOrEmpty(Model.Student.Class) ? "Chưa cập nhật" : Model.Student.Class)</span>
-                                        </div>
-                                        <div class="info-item-new">
-                                            <span class="info-label-new">Ngành</span>
-                                            <span class="info-value-new">@(string.IsNullOrEmpty(Model.Student.Faculty) ? "Chưa cập nhật" : Model.Student.Faculty)</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            }
-
-                            <div class="info-card-new">
-                                <h3><i class="fa-solid fa-circle-info"></i> Thông tin cá nhân</h3>
-                                <div class="info-list-new">
-                                    @if (!string.IsNullOrEmpty(Model.Location))
-                                    {
-                                        <div class="info-row-new">
-                                            <i class="fa-solid fa-location-dot"></i>
-                                            <span>Sống tại <strong>@Model.Location</strong></span>
-                                        </div>
-                                    }
-                                    @if (!string.IsNullOrEmpty(Model.Interests))
-                                    {
-                                        <div class="info-row-new">
-                                            <i class="fa-solid fa-heart"></i>
-                                            <div class="interests-display-new">
-                                                <span class="interests-label-new">Sở thích:</span>
-                                                <div class="interests-tags-new">
-                                                    @{
-                                                        var interests = Model.Interests.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-                                                        var interestIcons = new Dictionary<string, (string icon, string color)>
-                                                        {
-                                                            { "Nghe nhạc", ("fa-music", "#FF6B6B") },
-                                                            { "Xem phim", ("fa-film", "#4ECDC4") },
-                                                            { "Đọc sách", ("fa-book", "#45B7D1") },
-                                                            { "Du lịch", ("fa-plane", "#FFA07A") },
-                                                            { "Thể thao", ("fa-futbol", "#98D8C8") },
-                                                            { "Nấu ăn", ("fa-utensils", "#F7B731") },
-                                                            { "Nhiếp ảnh", ("fa-camera", "#5F27CD") },
-                                                            { "Vẽ tranh", ("fa-palette", "#FF9FF3") },
-                                                            { "Chơi game", ("fa-gamepad", "#54A0FF") },
-                                                            { "Nhớ về cô ấy", ("fa-seedling", "#26DE81") }
-                                                        };
-                                                        
-                                                        foreach (var interest in interests)
-                                                        {
-                                                            var trimmedInterest = interest.Trim();
-                                                            if (interestIcons.TryGetValue(trimmedInterest, out var iconInfo))
-                                                            {
-                                                                <span class="interest-tag-new" style="background-color: @iconInfo.color;">
-                                                                    <i class="fa-solid @iconInfo.icon"></i>
-                                                                    @trimmedInterest
-                                                                </span>
-                                                            }
-                                                            else
-                                                            {
-                                                                <span class="interest-tag-new" style="background-color: #95A5A6;">
-                                                                    <i class="fa-solid fa-star"></i>
-                                                                    @trimmedInterest
-                                                                </span>
-                                                            }
-                                                        }
-                                                    }
-                                                </div>
-                                            </div>
-                                        </div>
-                                    }
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="profile-tab-content-new" id="tab-friends">
-                        @if (Model.FriendCount > 0)
-                        {
-                            <div class="friends-grid-new">
-                                @foreach (var friend in Model.Friends)
-                                {
-                                    <a href="/Profile/@friend.UserId" class="friend-card-new">
-                                        <img src="@(string.IsNullOrEmpty(friend.Avatar) ? "/assets/user.png" : friend.Avatar)" alt="@friend.FullName">
-                                        <div class="friend-info-new">
-                                            <h4>@friend.FullName</h4>
-                                            @if (!string.IsNullOrEmpty(friend.Bio))
-                                            {
-                                                <p>@friend.Bio</p>
-                                            }
-                                        </div>
-                                    </a>
-                                }
-                            </div>
-                        }
-                        else
-                        {
-                            <div class="profile-empty-state">
-                                <i class="fa-solid fa-user-group"></i>
-                                <h3>Chưa có bạn bè</h3>
-                                <p>@(Model.IsOwnProfile ? "Bạn chưa có bạn bè nào." : "Người dùng này chưa có bạn bè.")</p>
-                            </div>
-                        }
-                    </div>
-                </div>
+            <!-- Tabs Navigation -->
+            <div class="profile-tabs-new">
+                <button class="profile-tab-new active" data-tab="posts">
+                    <i class="fa-solid fa-newspaper"></i> Bài viết
+                </button>
+                <button class="profile-tab-new" data-tab="about">
+                    <i class="fa-solid fa-user"></i> Giới thiệu
+                </button>
+                <button class="profile-tab-new" data-tab="friends">
+                    <i class="fa-solid fa-user-group"></i> Bạn bè (@Model.FriendCount)
+                </button>
             </div>
         </div>
+
+        <!-- Main Content Area -->
+        <div class="profile-content-area">
+             <!-- Tab Content: Posts -->
+             <div class="profile-tab-content-new active" id="tab-posts">
+                <div class="row">
+                    <!-- Right/Main Column for Posts -->
+                    <div class="col-md-12">
+                         @if (Model.Posts.Count == 0)
+                         {
+                             <div class="profile-empty-state">
+                                 <i class="fa-solid fa-newspaper"></i>
+                                 <h3>Chưa có bài viết</h3>
+                                 <p>@(Model.IsOwnProfile ? "Bạn chưa đăng bài viết nào." : "Người dùng này chưa đăng bài viết nào.")</p>
+                             </div>
+                         }
+                         else
+                         {
+                             <div class="profile-posts-list" style="max-width: 800px; margin: 0 auto;">
+                                 @foreach (var post in Model.Posts)
+                                 {
+                                     @await Html.PartialAsync("_PostCardPartial", post)
+                                 }
+                             </div>
+                         }
+                    </div>
+                </div>
+             </div>
+
+             <!-- Tab Content: About -->
+             <div class="profile-tab-content-new" id="tab-about">
+                 <div class="about-cards">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                             @if (Model.Student != null)
+                             {
+                                 <div class="info-card-new">
+                                     <h3><i class="fa-solid fa-graduation-cap"></i> Thông tin sinh viên</h3>
+                                     <div class="info-grid-new">
+                                         <div class="info-item-new">
+                                             <span class="info-label-new">Lớp sinh hoạt</span>
+                                             <span class="info-value-new">@(string.IsNullOrEmpty(Model.Student.Class) ? "Chưa cập nhật" : Model.Student.Class)</span>
+                                         </div>
+                                         <div class="info-item-new">
+                                             <span class="info-label-new">Ngành</span>
+                                             <span class="info-value-new">@(string.IsNullOrEmpty(Model.Student.Faculty) ? "Chưa cập nhật" : Model.Student.Faculty)</span>
+                                         </div>
+                                     </div>
+                                 </div>
+                             }
+                        </div>
+                        <div class="col-md-6 mb-3">
+                             <div class="info-card-new">
+                                 <h3><i class="fa-solid fa-circle-info"></i> Thông tin cá nhân</h3>
+                                 <div class="info-list-new">
+                                     @if (!string.IsNullOrEmpty(Model.Bio))
+                                     {
+                                          <div class="info-row-new mb-2">
+                                              <span>@Model.Bio</span>
+                                          </div>
+                                     }
+                                     @if (!string.IsNullOrEmpty(Model.Location))
+                                     {
+                                         <div class="info-row-new">
+                                             <i class="fa-solid fa-location-dot"></i>
+                                             <span>Sống tại <strong>@Model.Location</strong></span>
+                                         </div>
+                                     }
+                                     <!-- Interests repeated if needed, or hidden here since in header -->
+                                 </div>
+                             </div>
+                        </div>
+                    </div>
+                 </div>
+             </div>
+
+             <!-- Tab Content: Friends -->
+             <div class="profile-tab-content-new" id="tab-friends">
+                 @if (Model.FriendCount > 0)
+                 {
+                     <div class="friends-grid-new">
+                         @foreach (var friend in Model.Friends)
+                         {
+                             <a href="/Profile/@friend.UserId" class="friend-card-new">
+                                 <img src="@(string.IsNullOrEmpty(friend.Avatar) ? "/assets/user.png" : friend.Avatar)" alt="@friend.FullName">
+                                 <div class="friend-info-new">
+                                     <h4>@friend.FullName</h4>
+                                     @if (!string.IsNullOrEmpty(friend.Bio))
+                                     {
+                                         <p>@friend.Bio</p>
+                                     }
+                                 </div>
+                             </a>
+                         }
+                     </div>
+                 }
+                 else
+                 {
+                     <div class="profile-empty-state">
+                         <i class="fa-solid fa-user-group"></i>
+                         <h3>Chưa có bạn bè</h3>
+                         <p>@(Model.IsOwnProfile ? "Bạn chưa có bạn bè nào." : "Người dùng này chưa có bạn bè.")</p>
+                     </div>
+                 }
+             </div>
+        </div>
     </div>
+
 </div>
 
 <!-- Edit Profile Modal -->

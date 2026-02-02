@@ -11,7 +11,9 @@ namespace MTU.Models.Entities
         public int NotificationId { get; set; }
 
         [Required]
-        public int UserId { get; set; }
+        public int UserId { get; set; } // Receiver
+
+        public int? SenderId { get; set; } // Triggered by who
 
         [Required]
         [StringLength(50)]
@@ -30,5 +32,8 @@ namespace MTU.Models.Entities
         // Navigation properties
         [ForeignKey("UserId")]
         public virtual User User { get; set; } = null!;
+
+        [ForeignKey("SenderId")]
+        public virtual User? Sender { get; set; }
     }
 }

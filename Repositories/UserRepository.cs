@@ -77,15 +77,32 @@ namespace MTU.Repositories
                 .Where(f => (f.UserId == currentUserId || f.FriendId == currentUserId) 
                             && (f.Status == "accepted" || f.Status == "pending"))
                 .Select(f => f.UserId == currentUserId ? f.FriendId : f.UserId)
-                .ToListAsync();            var suggestions = await _context.Users
+                .ToListAsync();
+
+            var currentUser = await _context.Users
+                .Include(u => u.Student)
+                .FirstOrDefaultAsync(u => u.UserId == currentUserId);
+
+            var currentClass = currentUser?.Student?.Class;
+
+            IQueryable<User> query = _context.Users
+                .Include(u => u.Student)
                 .Where(u => u.UserId != currentUserId 
                             && !friendIds.Contains(u.UserId)
-                            && u.IsActive)
-                .OrderByDescending(u => u.CreatedAt)
-                .Take(limit)
-                .ToListAsync();
+                            && u.IsActive);
+
+            if (!string.IsNullOrEmpty(currentClass))
+            {
+                // Prioritize users in the same class
+                query = query.OrderByDescending(u => u.Student != null && u.Student.Class == currentClass)
+                             .ThenByDescending(u => u.CreatedAt);
+            }
+            else
+            {
+                query = query.OrderByDescending(u => u.CreatedAt);
+            }
             
-            return suggestions;
+            return await query.Take(limit).ToListAsync();
         }
 
         public async Task<string> SaveAvatarAsync(IFormFile file, int userId)

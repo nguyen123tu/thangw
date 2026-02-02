@@ -77,7 +77,79 @@ namespace MTU.Repositories
         {
             var post = await _context.Posts.FindAsync(postId);
             if (post != null)
-            {                post.IsDeleted = true;
+            {
+                post.IsDeleted = true;
+                post.UpdatedAt = DateTime.Now;
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        public async Task<List<Post>> GetFriendPostsAsync(int userId, int pageNumber, int pageSize)
+        {
+            // Lấy danh sách ID bạn bè
+            var friendIds = await _context.Friendships
+                .Where(f => (f.UserId == userId || f.FriendId == userId) && f.Status == "accepted")
+                .Select(f => f.UserId == userId ? f.FriendId : f.UserId)
+                .ToListAsync();
+
+            // Query:
+            // 1. Bài của mình (UserId == userId) -> Lấy hết
+            // 2. Bài của bạn bè (friendIds contains) -> Chỉ lấy Public hoặc Friends
+            return await _context.Posts
+                .Include(p => p.User)
+                .Where(p => !p.IsDeleted && (
+                    p.UserId == userId || 
+                    (friendIds.Contains(p.UserId) && (p.Privacy == "public" || p.Privacy == "friends"))
+                ))
+                .OrderByDescending(p => p.CreatedAt)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+        }
+
+        public async Task<List<Post>> GetExplorePostsAsync(int userId, int pageNumber, int pageSize)
+        {
+            // Lấy danh sách ID bạn bè
+            var friendIds = await _context.Friendships
+                .Where(f => (f.UserId == userId || f.FriendId == userId) && f.Status == "accepted")
+                .Select(f => f.UserId == userId ? f.FriendId : f.UserId)
+                .ToListAsync();
+
+            friendIds.Add(userId); // Thêm bản thân để loại trừ
+
+            // Khám phá: Bài người lạ -> Chỉ lấy Public
+            return await _context.Posts
+                .Include(p => p.User)
+                .Where(p => !p.IsDeleted && !friendIds.Contains(p.UserId) && p.Privacy == "public")
+                .OrderByDescending(p => p.CreatedAt)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+        }
+
+        public async Task<List<Post>> SearchAsync(string query, int limit)
+        {
+            if (string.IsNullOrWhiteSpace(query))
+                return new List<Post>();
+
+            var searchTerm = query.ToLower().Trim();
+
+            return await _context.Posts
+                .Include(p => p.User)
+                .Where(p => !p.IsDeleted && 
+                            p.Privacy == "public" && 
+                            p.Content.ToLower().Contains(searchTerm))
+                .OrderByDescending(p => p.CreatedAt)
+                .Take(limit)
+                .ToListAsync();
+        }
+
+        public async Task UpdatePrivacyAsync(int postId, string privacy)
+        {
+            var post = await _context.Posts.FindAsync(postId);
+            if (post != null)
+            {
+                post.Privacy = privacy;
                 post.UpdatedAt = DateTime.Now;
                 await _context.SaveChangesAsync();
             }

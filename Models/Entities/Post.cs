@@ -23,6 +23,12 @@ namespace MTU.Models.Entities
         [StringLength(255)]
         public string? VideoUrl { get; set; }
 
+        [StringLength(255)]
+        public string? FileUrl { get; set; }
+
+        [StringLength(255)]
+        public string? FileName { get; set; }
+
         [StringLength(100)]
         public string? Location { get; set; }
 
@@ -41,6 +47,7 @@ namespace MTU.Models.Entities
         public virtual User User { get; set; } = null!;
         public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();
         public virtual ICollection<Like> Likes { get; set; } = new List<Like>();
+        public virtual ICollection<SavedPost> SavedPosts { get; set; } = new List<SavedPost>();
         public virtual ICollection<PostTag> PostTags { get; set; } = new List<PostTag>();
     }
 }

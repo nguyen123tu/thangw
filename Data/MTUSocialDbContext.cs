@@ -22,6 +22,7 @@ namespace MTU.Data
         public DbSet<PostTag> PostTags { get; set; }
         public DbSet<Event> Events { get; set; }
         public DbSet<Story> Stories { get; set; }
+        public DbSet<SavedPost> SavedPosts { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -141,6 +142,23 @@ namespace MTU.Data
                     .WithMany()
                     .HasForeignKey(s => s.UserId)
                     .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<SavedPost>(entity =>
+            {
+                entity.HasKey(e => e.SavedPostId);
+                
+                entity.HasIndex(e => new { e.UserId, e.PostId }).IsUnique();
+                
+                entity.HasOne(s => s.Post)
+                    .WithMany(p => p.SavedPosts)
+                    .HasForeignKey(s => s.PostId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                
+                entity.HasOne(s => s.User)
+                    .WithMany(u => u.SavedPosts)
+                    .HasForeignKey(s => s.UserId)
+                    .OnDelete(DeleteBehavior.NoAction);
             });
         }
     }

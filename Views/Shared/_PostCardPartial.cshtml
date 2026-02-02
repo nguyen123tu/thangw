@@ -27,12 +27,26 @@
                     <i class="fa-solid fa-pen"></i>
                     Chỉnh sửa
                 </button>
+                <div class="post-menu-separator" style="height: 1px; background: #eee; margin: 4px 0;"></div>
+                <div class="post-menu-header" style="padding: 4px 16px; font-size: 11px; color: #888; font-weight: 600;">THAY ĐỔI QUYỀN RIÊNG TƯ</div>
+                <button class="post-menu-item" onclick="updatePrivacy(@Model.PostId, 'public')">
+                    <i class="fa-solid fa-globe"></i>
+                    Công khai
+                </button>
+                <button class="post-menu-item" onclick="updatePrivacy(@Model.PostId, 'friends')">
+                    <i class="fa-solid fa-user-group"></i>
+                    Bạn bè
+                </button>
+                <button class="post-menu-item" onclick="updatePrivacy(@Model.PostId, 'private')">
+                    <i class="fa-solid fa-lock"></i>
+                    Chỉ mình tôi
+                </button>
             }
             else
             {
-                <button class="post-menu-item">
-                    <i class="fa-solid fa-bookmark"></i>
-                    Lưu bài viết
+                <button class="post-menu-item" onclick="toggleSavePost(@Model.PostId, this)">
+                    <i class="@(Model.IsSavedByCurrentUser ? "fa-solid fa-bookmark" : "fa-regular fa-bookmark")"></i>
+                    <span>@(Model.IsSavedByCurrentUser ? "Bỏ lưu bài viết" : "Lưu bài viết")</span>
                 </button>
                 <button class="post-menu-item">
                     <i class="fa-solid fa-eye-slash"></i>
@@ -56,6 +70,38 @@
         {
             <div class="post-media">
                 <img class="post-mediaImage" src="@Model.ImageUrl" alt="Post image" />
+            </div>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(Model.VideoUrl))
+        {
+            <div class="post-media">
+                <video controls class="post-mediaVideo" style="width: 100%; max-height: 500px; background: #000; border-radius: 8px;">
+                    <source src="@Model.VideoUrl" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(Model.FileUrl))
+        {
+            <div class="post-attachment" style="margin-top: 12px; padding: 12px; background: #f0f2f5; border-radius: 8px; border: 1px solid #ddd;">
+                <a href="@Model.FileUrl" target="_blank" class="post-fileLink" style="display: flex; align-items: center; text-decoration: none; color: #333;">
+                    <div class="post-fileIcon" style="margin-right: 12px; font-size: 24px; color: #E74C3C;">
+                        <i class="fa-solid fa-file-pdf"></i>
+                    </div>
+                    <div class="post-fileInfo" style="flex: 1;">
+                        <div class="post-fileName" style="font-weight: 500; word-break: break-all;">
+                            @Model.FileName
+                        </div>
+                        <div class="post-fileAction" style="font-size: 13px; color: #65676b;">
+                            Click to download/view
+                        </div>
+                    </div>
+                    <div class="post-fileDownload">
+                        <i class="fa-solid fa-download" style="color: #65676b;"></i>
+                    </div>
+                </a>
             </div>
         }
     </div>

@@ -32,28 +32,38 @@
                     </div>
                     
                     <input type="file" id="post-image-input" name="Image" accept="image/*" style="display: none;" />
+                    <input type="file" id="post-video-input" name="Video" accept="video/mp4,video/x-m4v,video/*" style="display: none;" />
+                    <input type="file" id="post-file-input" name="Attachment" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip,.rar" style="display: none;" />
                     <input type="hidden" id="post-privacy-input" name="Privacy" value="public" />
                     
-                    <div id="image-preview-container" class="image-preview-container" style="display: none;">
-                        <div class="image-preview-wrapper">
-                            <img id="image-preview-img" class="image-preview-img" src="" alt="Preview" />
-                            <button id="image-preview-remove" class="image-preview-remove" type="button" aria-label="Remove image">
+                    <div id="media-preview-container" class="image-preview-container" style="display: none;">
+                        <div class="image-preview-wrapper" style="max-height: 200px; display: flex; align-items: center; justify-content: center; background: #f0f2f5; border-radius: 8px;">
+                             @* Initial Preview Elements *@
+                            <img id="image-preview-img" class="image-preview-img" src="" alt="Preview" style="display: none;" />
+                            <video id="video-preview-el" controls style="max-height: 200px; width: 100%; display: none;"></video>
+                            <div id="file-preview-el" style="display: none; padding: 20px; text-align: center;">
+                                <i class="fa-solid fa-file-lines" style="font-size: 32px; color: #555;"></i>
+                                <div id="file-preview-name" style="margin-top: 8px; font-weight: 500;"></div>
+                            </div>
+
+                            <button id="media-preview-remove" class="image-preview-remove" type="button" aria-label="Remove media">
                                 <i class="fa-solid fa-xmark"></i>
                             </button>
-                            <div id="compression-badge" class="compression-badge" style="display: none;">
-                                <i class="compression-badge-icon fa-solid fa-compress"></i>
-                                <span id="compression-badge-text">Compressed</span>
-                            </div>
-                        </div>
-                        <div class="image-preview-info">
-                            <p id="image-preview-info-text" class="image-preview-info-text"></p>
                         </div>
                     </div>
                     
                     <div class="feed-composer-actions">
-                        <button class="feed-btn" type="button" id="image-upload-btn">
-                            <i class="feed-btn-icon fa-regular fa-image"></i>
+                        <button class="feed-btn" type="button" id="image-upload-btn" title="Đăng ảnh">
+                            <i class="feed-btn-icon fa-regular fa-image" style="color: #2ecc71;"></i>
                             <span class="feed-btn-text">Ảnh</span>
+                        </button>
+                        <button class="feed-btn" type="button" id="video-upload-btn" title="Đăng video">
+                            <i class="feed-btn-icon fa-solid fa-video" style="color: #e74c3c;"></i>
+                            <span class="feed-btn-text">Video</span>
+                        </button>
+                        <button class="feed-btn" type="button" id="file-upload-btn" title="Đăng tài liệu">
+                            <i class="feed-btn-icon fa-solid fa-paperclip" style="color: #3498db;"></i>
+                            <span class="feed-btn-text">File</span>
                         </button>
                         <div class="privacy-dropdown">
                             <button class="feed-btn" type="button" id="privacy-btn">
@@ -184,54 +194,83 @@
             }
 
             const imageUploadBtn = document.getElementById('image-upload-btn');
+            const videoUploadBtn = document.getElementById('video-upload-btn');
+            const fileUploadBtn = document.getElementById('file-upload-btn');
+            
             const imageInput = document.getElementById('post-image-input');
-            const imagePreviewContainer = document.getElementById('image-preview-container');
+            const videoInput = document.getElementById('post-video-input');
+            const fileInput = document.getElementById('post-file-input');
+
+            const mediaPreviewContainer = document.getElementById('media-preview-container');
             const imagePreviewImg = document.getElementById('image-preview-img');
-            const imagePreviewRemove = document.getElementById('image-preview-remove');
-            const imagePreviewInfo = document.getElementById('image-preview-info-text');
+            const videoPreviewEl = document.getElementById('video-preview-el');
+            const filePreviewEl = document.getElementById('file-preview-el');
+            const filePreviewName = document.getElementById('file-preview-name');
+            const mediaPreviewRemove = document.getElementById('media-preview-remove');
+
+            function resetPreview() {
+                mediaPreviewContainer.style.display = 'none';
+                imagePreviewImg.style.display = 'none';
+                imagePreviewImg.src = '';
+                videoPreviewEl.style.display = 'none';
+                videoPreviewEl.src = '';
+                filePreviewEl.style.display = 'none';
+                filePreviewName.textContent = '';
+                
+                // Clear all inputs
+                imageInput.value = '';
+                videoInput.value = '';
+                fileInput.value = '';
+            }
 
             if (imageUploadBtn && imageInput) {
-                imageUploadBtn.addEventListener('click', function() {
-                    imageInput.click();
-                });
+                imageUploadBtn.addEventListener('click', () => { resetPreview(); imageInput.click(); });
+                videoUploadBtn?.addEventListener('click', () => { resetPreview(); videoInput.click(); });
+                fileUploadBtn?.addEventListener('click', () => { resetPreview(); fileInput.click(); });
 
+                // Image Handle
                 imageInput.addEventListener('change', function(e) {
                     const file = e.target.files[0];
                     if (file) {
-                        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
-                        if (!allowedTypes.includes(file.type)) {
-                            alert('Chỉ chấp nhận file ảnh (JPG, PNG, GIF)');
-                            imageInput.value = '';
-                            return;
-                        }
-
-                        if (file.size > 5 * 1024 * 1024) {
-                            alert('Kích thước file không được vượt quá 5MB');
-                            imageInput.value = '';
-                            return;
-                        }
-
+                        if (file.size > 10 * 1024 * 1024) { alert('Ảnh tối đa 10MB'); this.value = ''; return; }
                         const reader = new FileReader();
                         reader.onload = function(e) {
                             imagePreviewImg.src = e.target.result;
-                            imagePreviewContainer.style.display = 'block';
-                            
-                            const sizeInMB = (file.size / (1024 * 1024)).toFixed(2);
-                            imagePreviewInfo.textContent = `${file.name} (${sizeInMB} MB)`;
+                            imagePreviewImg.style.display = 'block';
+                            mediaPreviewContainer.style.display = 'block';
                         };
                         reader.readAsDataURL(file);
-                    } else {
-                        imagePreviewContainer.style.display = 'none';
                     }
                 });
 
-                if (imagePreviewRemove) {
-                    imagePreviewRemove.addEventListener('click', function() {
-                        imageInput.value = '';
-                        imagePreviewImg.src = '';
-                        imagePreviewContainer.style.display = 'none';
-                        imagePreviewInfo.textContent = '';
-                    });
+                // Video Handle
+                videoInput?.addEventListener('change', function(e) {
+                    const file = e.target.files[0];
+                    if (file) {
+                        if (file.size > 100 * 1024 * 1024) { alert('Video tối đa 100MB'); this.value = ''; return; }
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            videoPreviewEl.src = e.target.result;
+                            videoPreviewEl.style.display = 'block';
+                            mediaPreviewContainer.style.display = 'block';
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+
+                // File Handle
+                fileInput?.addEventListener('change', function(e) {
+                    const file = e.target.files[0];
+                    if (file) {
+                        if (file.size > 20 * 1024 * 1024) { alert('File tối đa 20MB'); this.value = ''; return; }
+                        filePreviewName.textContent = file.name;
+                        filePreviewEl.style.display = 'block';
+                        mediaPreviewContainer.style.display = 'block';
+                    }
+                });
+
+                if (mediaPreviewRemove) {
+                    mediaPreviewRemove.addEventListener('click', resetPreview);
                 }
             }
 
@@ -240,10 +279,12 @@
                 form.addEventListener('submit', function(e) {
                     const content = textarea.value.trim();
                     const hasImage = imageInput.files.length > 0;
+                    const hasVideo = videoInput?.files.length > 0;
+                    const hasFile = fileInput?.files.length > 0;
 
-                    if (!content && !hasImage) {
+                    if (!content && !hasImage && !hasVideo && !hasFile) {
                         e.preventDefault();
-                        alert('Vui lòng nhập nội dung hoặc chọn ảnh để đăng bài');
+                        alert('Vui lòng nhập nội dung hoặc chọn tệp để đăng bài');
                         return false;
                     }
                 });

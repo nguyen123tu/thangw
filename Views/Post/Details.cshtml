@@ -1,0 +1,15 @@
+@{
+    ViewData["Title"] = "Chi tiết bài viết";
+    Layout = "_Layout";
+}
+@model MTU.Models.DTOs.PostDto
+
+<div class="feed-wrapper">
+    <div class="mb-3">
+        <a href="javascript:history.back()" class="text-decoration-none text-muted" style="display: inline-flex; align-items: center; gap: 8px; font-weight: 500;">
+            <i class="fas fa-arrow-left"></i> Quay lại
+        </a>
+    </div>
+    
+    <partial name="_PostCardPartial" model="Model" />
+</div>

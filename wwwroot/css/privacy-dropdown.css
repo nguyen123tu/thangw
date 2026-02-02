@@ -5,9 +5,9 @@
 .privacy-menu {
     display: none;
     position: absolute;
-    bottom: 100%;
+    top: 100%;
     left: 0;
-    margin-bottom: 8px;
+    margin-top: 8px;
     background: var(--lofi-white);
     border: 2px solid var(--lofi-dark);
     border-radius: 12px;

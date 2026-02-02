@@ -7,6 +7,7 @@ namespace MTU.Services
         Task<LikeResult> ToggleLikeAsync(int postId, int userId);
         Task<CommentDto> AddCommentAsync(CreateCommentDto dto, int userId);
         Task<List<CommentDto>> GetCommentsAsync(int postId);
+        Task<bool> ToggleSaveAsync(int postId, int userId);
     }
 }
 

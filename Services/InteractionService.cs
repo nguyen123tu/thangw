@@ -10,17 +10,23 @@ namespace MTU.Services
         private readonly ILikeRepository _likeRepository;
         private readonly ICommentRepository _commentRepository;
         private readonly IPostRepository _postRepository;
+        private readonly ISavedPostRepository _savedPostRepository;
+        private readonly INotificationRepository _notificationRepository;
         private readonly ILogger<InteractionService> _logger;
 
         public InteractionService(
             ILikeRepository likeRepository,
             ICommentRepository commentRepository,
             IPostRepository postRepository,
+            ISavedPostRepository savedPostRepository,
+            INotificationRepository notificationRepository,
             ILogger<InteractionService> logger)
         {
             _likeRepository = likeRepository;
             _commentRepository = commentRepository;
             _postRepository = postRepository;
+            _savedPostRepository = savedPostRepository;
+            _notificationRepository = notificationRepository;
             _logger = logger;
         }
 
@@ -45,7 +51,24 @@ namespace MTU.Services
                         UserId = userId
                     };
 
-                    await _likeRepository.CreateAsync(newLike);                    var likeCount = await _postRepository.GetLikeCountAsync(postId);
+                    await _likeRepository.CreateAsync(newLike);
+                    var likeCount = await _postRepository.GetLikeCountAsync(postId);
+
+                    // Create Notification
+                    var post = await _postRepository.GetByIdAsync(postId);
+                    if (post != null && post.UserId != userId)
+                    {
+                        await _notificationRepository.CreateAsync(new Notification
+                        {
+                            UserId = post.UserId,
+                            Type = "like",
+                            Content = "đã thích bài viết của bạn",
+                            SenderId = userId,
+                            RelatedId = postId,
+                            CreatedAt = DateTime.Now,
+                            IsRead = false
+                        });
+                    }
                     
                     return new LikeResult
                     {
@@ -77,7 +100,25 @@ namespace MTU.Services
                     PostId = dto.PostId,
                     UserId = userId,
                     Content = dto.Content.Trim()
-                };                var createdComment = await _commentRepository.CreateAsync(comment);                var comments = await _commentRepository.GetByPostIdAsync(dto.PostId);
+                };                var createdComment = await _commentRepository.CreateAsync(comment);
+
+                // Create Notification
+                var post = await _postRepository.GetByIdAsync(dto.PostId);
+                if (post != null && post.UserId != userId)
+                {
+                    await _notificationRepository.CreateAsync(new Notification
+                    {
+                        UserId = post.UserId,
+                        Type = "comment",
+                        Content = "đã bình luận về bài viết của bạn",
+                        SenderId = userId,
+                        RelatedId = dto.PostId,
+                        CreatedAt = DateTime.Now,
+                        IsRead = false
+                    });
+                }
+
+                var comments = await _commentRepository.GetByPostIdAsync(dto.PostId);
                 var commentWithUser = comments.FirstOrDefault(c => c.CommentId == createdComment.CommentId);
 
                 if (commentWithUser == null)
@@ -111,6 +152,34 @@ namespace MTU.Services
             {
                 _logger.LogError(ex, "Error retrieving comments for post {PostId}", postId);
                 return new List<CommentDto>();            }
+        }
+
+        public async Task<bool> ToggleSaveAsync(int postId, int userId)
+        {
+            try
+            {
+                if (await _savedPostRepository.HasSavedAsync(userId, postId))
+                {
+                    await _savedPostRepository.UnsaveAsync(userId, postId);
+                    return false;
+                }
+                else
+                {
+                    var savedPost = new SavedPost
+                    {
+                        UserId = userId,
+                        PostId = postId,
+                        SavedAt = DateTime.Now
+                    };
+                    await _savedPostRepository.SaveAsync(savedPost);
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error toggling save for post {PostId} by user {UserId}", postId, userId);
+                throw new InvalidOperationException("Unable to process save action");
+            }
         }
 
         private CommentDto MapCommentToDto(Comment comment)

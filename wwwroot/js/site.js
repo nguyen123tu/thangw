@@ -203,3 +203,72 @@ function editPost(postId) {
     alert('Tính năng chỉnh sửa bài viết đang được phát triển');
 }
 
+
+/**
+ * Toggle save post status
+ * @param {number} postId - The post ID
+ * @param {HTMLElement} btn - The button element
+ */
+async function toggleSavePost(postId, btn) {
+    try {
+        const response = await fetch('/Post/Save', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: 'postId=' + postId
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            const icon = btn.querySelector('i');
+            const textSpan = btn.querySelector('span');
+            
+            if (result.isSaved) {
+                // Trạng thái: Đã lưu -> Hiện icon Solid (Đậm)
+                if (icon) icon.className = 'fa-solid fa-bookmark';
+                if (textSpan) textSpan.textContent = 'Bỏ lưu bài viết';
+            } else {
+                // Trạng thái: Chưa lưu -> Hiện icon Regular (Rỗng)
+                if (icon) icon.className = 'fa-regular fa-bookmark'; 
+                if (textSpan) textSpan.textContent = 'Lưu bài viết';
+
+                // SPECIAL LOGIC: Nếu đang ở trang "Đã lưu", xóa bài viết khỏi danh sách
+                if (window.location.pathname.toLowerCase().includes('/post/saved')) {
+                    const postCard = btn.closest('.post-card');
+                    if (postCard) {
+                        // Animation fade out
+                        postCard.style.transition = 'all 0.3s ease';
+                        postCard.style.opacity = '0';
+                        postCard.style.transform = 'scale(0.95)';
+                        
+                        setTimeout(() => {
+                            postCard.remove();
+                            
+                            // Check if list empty
+                            const feedWrapper = document.querySelector('.feed-wrapper');
+                            const remainingPosts = feedWrapper ? feedWrapper.querySelectorAll('.post-card') : [];
+                            
+                            if (remainingPosts.length === 0) {
+                                // Reload to show empty state designed in View
+                                window.location.reload();
+                            }
+                        }, 300);
+                    }
+                }
+            }
+            
+            // Close the menu
+            const menu = btn.closest('.post-menu-dropdown');
+            if (menu) menu.classList.remove('show');
+            
+        } else {
+            alert(result.message || 'Không thể thực hiện hành động này');
+        }
+    } catch (error) {
+        console.error('Error toggling save post:', error);
+        alert('Đã xảy ra lỗi kết nối');
+    }
+}
+

@@ -12,6 +12,10 @@ namespace MTU.Repositories
         Task<int> GetLikeCountAsync(int postId);
         Task<int> GetCommentCountAsync(int postId);
         Task DeleteAsync(int postId);
+        Task<List<Post>> GetFriendPostsAsync(int userId, int pageNumber, int pageSize);
+        Task<List<Post>> GetExplorePostsAsync(int userId, int pageNumber, int pageSize);
+        Task<List<Post>> SearchAsync(string query, int limit);
+        Task UpdatePrivacyAsync(int postId, string privacy);
     }
 }
 

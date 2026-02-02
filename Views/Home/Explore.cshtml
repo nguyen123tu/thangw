@@ -1,0 +1,73 @@
+@model List<MTU.Models.DTOs.PostDto>
+
+@{
+    ViewData["Title"] = "Khám phá";
+}
+
+<div class="feed-wrapper">
+    <div class="feed-card" style="padding: 15px; margin-bottom: 20px; background: linear-gradient(to right, #667eea, #764ba2); color: white; border-radius: 10px;">
+        <h2 style="margin: 0; font-size: 1.5rem;"><i class="fas fa-compass"></i> Khám phá</h2>
+        <p style="margin: 5px 0 0; opacity: 0.9;">Tìm kiếm bài viết thú vị từ cộng đồng MTU</p>
+    </div>
+
+    <section class="feed-list">
+        @if (ViewBag.ErrorMessage != null)
+        {
+            <div class="feed-card" style="padding: 20px; text-align: center; color: #e74c3c;">
+                <p>@ViewBag.ErrorMessage</p>
+            </div>
+        }
+        
+        @if (Model.Count == 0 && ViewBag.ErrorMessage == null)
+        {
+            <div class="feed-card" style="padding: 20px; text-align: center;">
+                <p>Chưa có bài viết khám phá nào.</p>
+            </div>
+        }
+        
+        @foreach (var post in Model)
+        {
+            @await Html.PartialAsync("_PostCardPartial", post)
+        }
+    </section>
+
+    @* Pagination Controls *@
+    @if (ViewBag.TotalPages > 1)
+    {
+        <div class="feed-pagination" style="display: flex; justify-content: center; align-items: center; gap: 10px; padding: 20px; margin-top: 20px;">
+            @if (ViewBag.HasPreviousPage as bool? ?? false)
+            {
+                <a href="?page=@(ViewBag.CurrentPage - 1)" class="feed-btn" style="text-decoration: none;">
+                    <i class="fa-solid fa-chevron-left"></i> Previous
+                </a>
+            }
+            else
+            {
+                <button class="feed-btn" disabled style="opacity: 0.5; cursor: not-allowed;">
+                    <i class="fa-solid fa-chevron-left"></i> Previous
+                </button>
+            }
+            
+            <span style="padding: 0 15px; font-weight: 500;">
+                Page @(ViewBag.CurrentPage ?? 1)
+            </span>
+            
+            @if (ViewBag.HasNextPage as bool? ?? false)
+            {
+                <a href="?page=@(ViewBag.CurrentPage + 1)" class="feed-btn" style="text-decoration: none;">
+                    Next <i class="fa-solid fa-chevron-right"></i>
+                </a>
+            }
+            else
+            {
+                <button class="feed-btn" disabled style="opacity: 0.5; cursor: not-allowed;">
+                    Next <i class="fa-solid fa-chevron-right"></i>
+                </button>
+            }
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script src="~/js/interactions.js" asp-append-version="true"></script>
+}

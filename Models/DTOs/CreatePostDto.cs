@@ -10,6 +10,10 @@ namespace MTU.Models.DTOs
 
         public IFormFile? Image { get; set; }
 
+        public IFormFile? Video { get; set; }
+
+        public IFormFile? Attachment { get; set; }
+
         [StringLength(20)]
         public string? Privacy { get; set; } = "public";
     }

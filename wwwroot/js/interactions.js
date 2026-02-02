@@ -1,4 +1,4 @@
-(function() {
+(function () {
     'use strict';
 
     console.log('Interactions.js loaded');
@@ -6,7 +6,7 @@
     function initializeLikeButtons() {
         const likeButtons = document.querySelectorAll('.post-action-like');
         console.log('Found like buttons:', likeButtons.length);
-        
+
         likeButtons.forEach(button => {
             button.onclick = handleLikeClick;
         });
@@ -15,12 +15,12 @@
     async function handleLikeClick(event) {
         event.preventDefault();
         event.stopPropagation();
-        
+
         const button = event.currentTarget;
         const postCard = button.closest('.post-card');
-        
+
         if (!postCard) return;
-        
+
         const postId = postCard.getAttribute('data-post-id');
         if (!postId) {
             console.error('Post ID not found');
@@ -77,36 +77,36 @@
     function initializeCommentButtons() {
         const commentButtons = document.querySelectorAll('.post-action-comment');
         console.log('Found comment buttons:', commentButtons.length);
-        
+
         commentButtons.forEach(button => {
-            button.onclick = function(event) {
+            button.onclick = function (event) {
                 event.preventDefault();
                 console.log('Comment button clicked');
-                
+
                 const postCard = this.closest('.post-card');
                 if (!postCard) {
                     console.error('Post card not found');
                     return;
                 }
-                
+
                 const commentsExpandable = postCard.querySelector('.post-comments-expandable');
                 if (!commentsExpandable) {
                     console.error('Comments expandable not found');
                     return;
                 }
-                
+
                 console.log('Current open state:', commentsExpandable.hasAttribute('open'));
-                
+
                 if (commentsExpandable.hasAttribute('open')) {
                     commentsExpandable.removeAttribute('open');
                 } else {
                     commentsExpandable.setAttribute('open', '');
-                    
+
                     const postId = postCard.getAttribute('data-post-id');
                     if (postId) {
                         loadComments(postId, postCard);
                     }
-                    
+
                     setTimeout(() => {
                         const commentInput = commentsExpandable.querySelector('.post-commentInput');
                         if (commentInput) {
@@ -119,14 +119,14 @@
 
         const commentSendButtons = document.querySelectorAll('.post-commentSend');
         console.log('Found comment send buttons:', commentSendButtons.length);
-        
+
         commentSendButtons.forEach(button => {
             button.onclick = handleCommentSend;
         });
 
         const commentInputs = document.querySelectorAll('.post-commentInput');
         commentInputs.forEach(input => {
-            input.onkeypress = function(e) {
+            input.onkeypress = function (e) {
                 if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
                     const sendButton = this.parentElement.querySelector('.post-commentSend');
@@ -144,7 +144,7 @@
 
         const button = event.currentTarget;
         const postCard = button.closest('.post-card');
-        
+
         if (!postCard) return;
 
         const postId = postCard.getAttribute('data-post-id');
@@ -168,7 +168,7 @@
 
         try {
             console.log('Sending comment:', { postId, content });
-            
+
             const response = await fetch('/Post/Comment', {
                 method: 'POST',
                 headers: {
@@ -190,7 +190,7 @@
 
             const result = await response.json();
             console.log('Comment result:', result);
-            
+
             if (!result.success) {
                 throw new Error(result.message || 'Failed to add comment');
             }
@@ -236,7 +236,7 @@
 
         try {
             const response = await fetch('/Post/GetComments?postId=' + postId);
-            
+
             if (!response.ok) {
                 throw new Error('Failed to load comments');
             }
@@ -282,6 +282,77 @@
         div.textContent = text;
         return div.innerHTML;
     }
+
+    // Toggle Post Menu
+    window.togglePostMenu = function (btn) {
+        event.stopPropagation();
+        const dropdown = btn.nextElementSibling;
+
+        // Close all other dropdowns
+        document.querySelectorAll('.post-menu-dropdown').forEach(d => {
+            if (d !== dropdown) d.classList.remove('show');
+        });
+
+        dropdown.classList.toggle('show');
+    };
+
+    // Close menus when clicking outside
+    document.addEventListener('click', function (event) {
+        if (!event.target.closest('.post-menu-dropdown') && !event.target.closest('.post-more')) {
+            document.querySelectorAll('.post-menu-dropdown').forEach(d => {
+                d.classList.remove('show');
+            });
+        }
+    });
+
+    // Update Privacy
+    window.updatePrivacy = function (postId, privacy) {
+        const formData = new FormData();
+        formData.append('postId', postId);
+        formData.append('privacy', privacy);
+
+        fetch('/Post/UpdatePrivacy', {
+            method: 'POST',
+            body: formData
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    // Close menu
+                    document.querySelectorAll('.post-menu-dropdown').forEach(d => d.classList.remove('show'));
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    };
+
+    // Placeholder for other actions
+    window.deletePost = function (postId) {
+        if (confirm('Bạn có chắc chắn muốn xóa bài viết này không?')) {
+            fetch(`/Post/Delete?id=${postId}`, {
+                method: 'POST'
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const postCard = document.querySelector(`.post-card[data-post-id="${postId}"]`);
+                        if (postCard) {
+                            postCard.remove();
+                        }
+                        alert(data.message);
+                    } else {
+                        alert(data.message);
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        }
+    };
+
+    window.editPost = function (postId) {
+        alert('Tính năng chỉnh sửa đang phát triển');
+    };
 
     function initialize() {
         console.log('Initializing interactions...');

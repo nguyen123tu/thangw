@@ -19,13 +19,28 @@
         </a>
     }
     
+    @{
+        var currentController = ViewContext.RouteData.Values["Controller"]?.ToString();
+        var currentAction = ViewContext.RouteData.Values["Action"]?.ToString();
+
+        string GetActiveClass(string controller, string action)
+        {
+            if (string.Equals(currentController, controller, StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(currentAction, action, StringComparison.OrdinalIgnoreCase))
+            {
+                return "active";
+            }
+            return "";
+        }
+    }
+
     <nav class="nav-menu">
-        <a href="/" class="nav-item active">
+        <a href="/" class="nav-item @GetActiveClass("Home", "Index")">
             <i class="fas fa-home"></i>
             <span>Trang chủ</span>
         </a>
         
-        <a href="#" class="nav-item">
+        <a href="/Home/Explore" class="nav-item @GetActiveClass("Home", "Explore")">
             <i class="fas fa-compass"></i>
             <span>Khám phá</span>
         </a>
@@ -40,12 +55,12 @@
             <span>Tin nhắn</span>
         </a>
         
-        <a href="#" class="nav-item">
+        <a href="/Post/Saved" class="nav-item @GetActiveClass("Post", "Saved")">
             <i class="fas fa-bookmark"></i>
             <span>Đã lưu</span>
         </a>
         
-        <a href="/Profile" class="nav-item">
+        <a href="/Profile" class="nav-item @GetActiveClass("Profile", "Index")">
             <i class="fas fa-user"></i>
             <span>Hồ sơ</span>
         </a>
@@ -55,7 +70,7 @@
             <span>Nhóm</span>
         </a>
         
-        <a href="#" class="nav-item">
+        <a href="#" class="nav-item @GetActiveClass("Home", "Settings")">
             <i class="fas fa-cog"></i>
             <span>Cài đặt</span>
         </a>

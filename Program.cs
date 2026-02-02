@@ -20,6 +20,8 @@ builder.Services.AddScoped<ILikeRepository, LikeRepository>();
 builder.Services.AddScoped<ICommentRepository, CommentRepository>();
 builder.Services.AddScoped<IStudentRepository, StudentRepository>();
 builder.Services.AddScoped<IFriendshipRepository, FriendshipRepository>();
+builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
+builder.Services.AddScoped<ISavedPostRepository, SavedPostRepository>();
 
 // Add Services
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -57,7 +59,11 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Home/Error");
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
+    app.UseHsts();
 }
+
+// Auto-patch database for new features
+await MTU.Data.DbPatcher.ApplyPatchesAsync(app);
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
