@@ -51,11 +51,11 @@ namespace MTU.Repositories
         public async Task<List<Post>> GetSavedPostsAsync(int userId, int pageNumber, int pageSize)
         {
             return await _context.SavedPosts
-                .Where(s => s.UserId == userId)
+                .Include(s => s.Post)
+                    .ThenInclude(p => p.User)
+                .Where(s => s.UserId == userId && !s.Post.IsDeleted)
                 .OrderByDescending(s => s.SavedAt)
                 .Select(s => s.Post)
-                .Include(p => p.User)
-                .Where(p => !p.IsDeleted) // Ensure post is not deleted even if saved record exists
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();

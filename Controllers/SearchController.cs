@@ -42,6 +42,15 @@ namespace MTU.Controllers
                 if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int userId))
                 {
                     ViewBag.CurrentUserId = userId;
+
+                    // Get current user info for Layout
+                    var currentUser = await _authService.GetUserByIdAsync(userId);
+                    if (currentUser != null)
+                    {
+                        ViewBag.CurrentUserAvatar = currentUser.Avatar ?? "/assets/user.png";
+                        var fullName = $"{currentUser.FirstName} {currentUser.LastName}".Trim();
+                        ViewBag.CurrentUserFullName = string.IsNullOrWhiteSpace(fullName) ? currentUser.Username : fullName;
+                    }
                     
                     // Run search tasks in parallel
                     var peopleTask = _authService.SearchUsersAsync(q, 20);

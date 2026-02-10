@@ -35,6 +35,7 @@
                     <input type="file" id="post-video-input" name="Video" accept="video/mp4,video/x-m4v,video/*" style="display: none;" />
                     <input type="file" id="post-file-input" name="Attachment" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip,.rar" style="display: none;" />
                     <input type="hidden" id="post-privacy-input" name="Privacy" value="public" />
+                    <input type="hidden" id="post-feeling-input" name="Feeling" value="" />
                     
                     <div id="media-preview-container" class="image-preview-container" style="display: none;">
                         <div class="image-preview-wrapper" style="max-height: 200px; display: flex; align-items: center; justify-content: center; background: #f0f2f5; border-radius: 8px;">
@@ -95,10 +96,21 @@
                                 </div>
                             </div>
                         </div>
-                        <button class="feed-btn" type="button" disabled>
-                            <i class="feed-btn-icon fa-regular fa-face-smile"></i>
-                            <span class="feed-btn-text">Cảm xúc</span>
-                        </button>
+                        <div class="feelings-wrapper" style="position: relative;">
+                            <button class="feed-btn" type="button" id="feelings-btn">
+                                <i class="feed-btn-icon fa-regular fa-face-smile" id="feelings-icon"></i>
+                                <span class="feed-btn-text" id="feelings-text">Cảm xúc</span>
+                            </button>
+                            <div class="feelings-dropdown" id="feelings-dropdown">
+                                <div class="feelings-header">
+                                    <h4>Bạn đang cảm thấy thế nào?</h4>
+                                    <button type="button" class="feelings-close" id="feelings-close"><i class="fa-solid fa-xmark"></i></button>
+                                </div>
+                                <div class="feelings-grid" id="feelings-grid">
+                                    <!-- Populated by JS -->
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -274,9 +286,91 @@
                 }
             }
 
+
+            // Feelings Logic
+            const feelingsBtn = document.getElementById('feelings-btn');
+            const feelingsDropdown = document.getElementById('feelings-dropdown');
+            const feelingsClose = document.getElementById('feelings-close');
+            const feelingsGrid = document.getElementById('feelings-grid');
+            const feelingsIcon = document.getElementById('feelings-icon');
+            const feelingsText = document.getElementById('feelings-text');
+            const feelingsInput = document.getElementById('post-feeling-input');
+
+            const feelings = [
+                { icon: 'fa-face-smile', text: 'Vui vẻ', color: '#ffb100' },
+                { icon: 'fa-heart', text: 'Đáng yêu', color: '#ff4757' },
+                { icon: 'fa-face-laugh-squint', text: 'Hào hứng', color: '#2ed573' },
+                { icon: 'fa-face-sad-tear', text: 'Buồn', color: '#5352ed' },
+                { icon: 'fa-face-angry', text: 'Tức giận', color: '#ff6b81' },
+                { icon: 'fa-face-tired', text: 'Mệt mỏi', color: '#747d8c' },
+                { icon: 'fa-face-surprise', text: 'Ngạc nhiên', color: '#ffa502' },
+                { icon: 'fa-face-grin-hearts', text: 'Hạnh phúc', color: '#ff4757' },
+                { icon: 'fa-face-grin-stars', text: 'Tuyệt vời', color: '#1e90ff' },
+                { icon: 'fa-face-rolling-eyes', text: 'Chán', color: '#a4b0be' },
+                { icon: 'fa-face-sleeping', text: 'Buồn ngủ', color: '#747d8c' },
+                { icon: 'fa-face-dizzy', text: 'Chóng mặt', color: '#ffa502' },
+            ];
+
+            if (feelingsGrid) {
+                feelings.forEach(f => {
+                    const item = document.createElement('div');
+                    item.className = 'feeling-item';
+                    item.innerHTML = `
+                        <div class="feeling-icon" style="color: ${f.color}"><i class="fa-regular ${f.icon}"></i></div>
+                        <div class="feeling-text">${f.text}</div>
+                    `;
+                    item.addEventListener('click', () => {
+                        // Reset active
+                        document.querySelectorAll('.feeling-item').forEach(el => el.classList.remove('active'));
+                        item.classList.add('active');
+                        
+                        // Update button
+                        feelingsIcon.className = `feed-btn-icon fa-regular ${f.icon}`;
+                        feelingsIcon.style.color = f.color;
+                        feelingsText.textContent = f.text;
+                        feelingsBtn.classList.add('has-feeling');
+                        
+                        // Update input
+                        if(feelingsInput) feelingsInput.value = f.text; // Store text
+                        
+                        // Close dropdown
+                        feelingsDropdown.classList.remove('show');
+                    });
+                    feelingsGrid.appendChild(item);
+                });
+            }
+
+            if (feelingsBtn) {
+                feelingsBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    feelingsDropdown.classList.toggle('show');
+                });
+            }
+
+            if (feelingsClose) {
+                feelingsClose.addEventListener('click', () => feelingsDropdown.classList.remove('show'));
+            }
+
+            document.addEventListener('click', (e) => {
+                if (feelingsDropdown && feelingsDropdown.classList.contains('show') && !feelingsDropdown.contains(e.target) && !feelingsBtn.contains(e.target)) {
+                    feelingsDropdown.classList.remove('show');
+                }
+            });
+
             const form = document.getElementById('create-post-form');
             if (form) {
                 form.addEventListener('submit', function(e) {
+                    
+                    // Prepend feeling if exists
+                    const feelingInput = document.getElementById('post-feeling-input');
+                    if (feelingInput && feelingInput.value) {
+                         const currentVal = textarea.value;
+                         textarea.value = `Example: cảm thấy ${feelingInput.value} - ${currentVal}`;
+                         // Tiếng Việt tự nhiên hơn: &quot;Đang cảm thấy Vui vẻ - nội dung&quot;
+                         // Tuy nhiên để đơn giản mình sẽ dùng format:
+                         textarea.value = `— đang cảm thấy ${feelingInput.value} 😆. \n${currentVal}`;
+                    }
+
                     const content = textarea.value.trim();
                     const hasImage = imageInput.files.length > 0;
                     const hasVideo = videoInput?.files.length > 0;

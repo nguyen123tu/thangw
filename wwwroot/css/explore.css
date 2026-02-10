@@ -1,0 +1,95 @@
+.explore-header-card {
+    background: var(--lofi-sage);
+    color: white;
+    padding: 24px;
+    border-radius: var(--radius-organic-md);
+    border: 3px solid var(--border-primary);
+    box-shadow: var(--shadow-hard);
+    margin-bottom: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    position: relative;
+    overflow: hidden;
+}
+
+.explore-header-card h2 {
+    font-size: 24px;
+    font-weight: 800;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.explore-header-card p {
+    font-size: 15px;
+    margin: 0;
+    opacity: 0.9;
+    font-weight: 500;
+}
+
+.explore-header-icon {
+    font-size: 28px;
+}
+
+.empty-explore-card {
+    background: var(--lofi-white);
+    border: 3px solid var(--border-primary);
+    border-radius: var(--radius-organic);
+    box-shadow: 6px 6px 0 var(--border-primary);
+    padding: 40px;
+    text-align: center;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.feed-pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    padding: 20px 0;
+    margin-top: 10px;
+}
+
+.feed-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: var(--lofi-white);
+    color: var(--text-primary);
+    border: 2px solid var(--border-primary);
+    border-radius: var(--radius-organic-sm);
+    font-weight: 700;
+    cursor: pointer;
+    text-decoration: none;
+    box-shadow: 4px 4px 0 var(--border-primary);
+    transition: all 0.2s;
+}
+
+.feed-btn:hover:not(:disabled) {
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0 var(--border-primary);
+    background: var(--lofi-sage-light);
+}
+
+.feed-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background: var(--lofi-cream);
+    box-shadow: none;
+    transform: translate(2px, 2px);
+}
+
+.page-info {
+    font-weight: 700;
+    color: var(--text-primary);
+    padding: 8px 16px;
+    background: var(--lofi-sage);
+    color: white;
+    border-radius: 20px;
+    border: 2px solid var(--border-primary);
+    font-family: monospace;
+}

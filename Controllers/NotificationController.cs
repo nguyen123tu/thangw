@@ -34,6 +34,15 @@ namespace MTU.Controllers
             var notifications = await _notificationRepository.GetByUserIdAsync(userId);
             await _notificationRepository.MarkAllAsReadAsync(userId);
 
+            // Get current user info for Layout (Sidebar Avatar)
+            var currentUser = await _userRepository.GetByIdAsync(userId);
+            if (currentUser != null)
+            {
+                ViewBag.CurrentUserAvatar = currentUser.Avatar ?? "/assets/user.png";
+                var fullName = $"{currentUser.FirstName} {currentUser.LastName}".Trim();
+                ViewBag.CurrentUserFullName = string.IsNullOrWhiteSpace(fullName) ? currentUser.Username : fullName;
+            }
+
             return View(notifications);
         }
 

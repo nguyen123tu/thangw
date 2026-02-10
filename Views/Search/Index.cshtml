@@ -1,122 +1,103 @@
-@model MTU.Models.SearchViewModel
 @{
     ViewData["Title"] = "Kết quả tìm kiếm - " + Model.Query;
-    var currentUserId = ViewBag.CurrentUserId as int? ?? 0;
+    Layout = "_Layout";
+    
+    // Logic to determine active tab:
+    // If we have People results, show People tab first.
+    // If not, but we have Post results, show Posts tab first.
+    // Otherwise (both 0), show People tab (default empty state).
+    bool showPeople = Model.People.Count > 0 || Model.Posts.Count == 0;
 }
 
-<div class="container mt-4">
-    <div class="row">
-        <!-- Main Content -->
-        <div class="col-md-9 mx-auto">
-            <div class="card shadow-sm border-0 mb-4">
-                <div class="card-body p-4">
-                    <h4 class="mb-4">Kết quả tìm kiếm cho "<span class="text-primary">@Model.Query</span>"</h4>
+<div class="search-container">
+    <div class="search-header-card">
+        <h4 class="search-title">Kết quả tìm kiếm cho "<span class="highlight-text">@Model.Query</span>"</h4>
 
-                    @if (!Model.HasResults)
+        @if (!Model.HasResults)
+        {
+            <div class="empty-search-state">
+                <i class="fas fa-search empty-search-icon"></i>
+                <p>Không tìm thấy kết quả nào phù hợp.</p>
+            </div>
+        }
+        else
+        {
+            <!-- Custom Tabs -->
+            <div class="search-tabs" role="tablist">
+                <button class="search-tab-btn @(showPeople ? "active" : "")" id="people-tab" data-bs-toggle="tab" data-bs-target="#people" type="button" role="tab" aria-selected="@(showPeople.ToString().ToLower())">
+                    Mọi người <span class="tab-badge">@Model.People.Count</span>
+                </button>
+                <button class="search-tab-btn @(!showPeople ? "active" : "")" id="posts-tab" data-bs-toggle="tab" data-bs-target="#posts" type="button" role="tab" aria-selected="@((!showPeople).ToString().ToLower())">
+                    Bài viết <span class="tab-badge">@Model.Posts.Count</span>
+                </button>
+            </div>
+
+            <div class="tab-content">
+                <!-- People Tab -->
+                <div class="tab-pane fade @(showPeople ? "show active" : "")" id="people" role="tabpanel">
+                    @if (Model.People.Count > 0)
                     {
-                        <div class="text-center py-5">
-                            <i class="fas fa-search fa-3x text-muted mb-3"></i>
-                            <p class="text-muted">Không tìm thấy kết quả nào phù hợp.</p>
+                        <div class="user-results-list">
+                            @foreach (var user in Model.People)
+                            {
+                                <div class="user-result-item">
+                                    <a href="/Profile/@user.UserId">
+                                        <img src="@(user.Avatar ?? "/assets/user.png")" alt="@user.Username" class="user-avatar">
+                                    </a>
+                                    <div class="user-info flex-grow-1">
+                                        <h6>
+                                            <a href="/Profile/@user.UserId">
+                                                @((string.IsNullOrEmpty(user.FirstName) && string.IsNullOrEmpty(user.LastName)) ? user.Username : $"{user.FirstName} {user.LastName}")
+                                            </a>
+                                        </h6>
+                                        <div class="user-handle">@@@user.Username</div>
+                                        @if (!string.IsNullOrEmpty(user.Bio))
+                                        {
+                                            <div class="user-bio">@user.Bio</div>
+                                        }
+                                    </div>
+                                    <a href="/Profile/@user.UserId" class="btn-view-profile">
+                                        Xem trang
+                                    </a>
+                                </div>
+                            }
                         </div>
                     }
                     else
                     {
-                        <ul class="nav nav-pills mb-4" id="searchTabs" role="tablist">
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link active" id="people-tab" data-bs-toggle="tab" data-bs-target="#people" type="button" role="tab" aria-controls="people" aria-selected="true">
-                                    Mọi người <span class="badge bg-secondary ms-1">@Model.People.Count</span>
-                                </button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="posts-tab" data-bs-toggle="tab" data-bs-target="#posts" type="button" role="tab" aria-controls="posts" aria-selected="false">
-                                    Bài viết <span class="badge bg-secondary ms-1">@Model.Posts.Count</span>
-                                </button>
-                            </li>
-                        </ul>
+                        <div class="empty-search-state">
+                            <p>Không tìm thấy người dùng nào.</p>
+                        </div>
+                    }
+                </div>
 
-                        <div class="tab-content" id="searchTabsContent">
-                            <!-- People Tab -->
-                            <div class="tab-pane fade show active" id="people" role="tabpanel" aria-labelledby="people-tab">
-                                @if (Model.People.Any())
-                                {
-                                    <div class="list-group list-group-flush">
-                                        @foreach (var user in Model.People)
-                                        {
-                                            <div class="list-group-item px-0 py-3 border-bottom">
-                                                <div class="d-flex align-items-center">
-                                                    <a href="/Profile/@user.UserId" class="text-decoration-none">
-                                                        <img src="@(user.Avatar ?? "/assets/user.png")" alt="@user.Username" class="rounded-circle border" width="50" height="50" style="object-fit: cover;">
-                                                    </a>
-                                                    <div class="ms-3 flex-grow-1">
-                                                        <h6 class="mb-0">
-                                                            <a href="/Profile/@user.UserId" class="text-dark text-decoration-none fw-bold">
-                                                                @((string.IsNullOrEmpty(user.FirstName) && string.IsNullOrEmpty(user.LastName)) ? user.Username : $"{user.FirstName} {user.LastName}")
-                                                            </a>
-                                                        </h6>
-                                                        <small class="text-muted">@@@user.Username</small>
-                                                        @if (!string.IsNullOrEmpty(user.Bio))
-                                                        {
-                                                            <p class="small text-muted mb-0 mt-1 text-truncate" style="max-width: 400px;">@user.Bio</p>
-                                                        }
-                                                    </div>
-                                                    <div>
-                                                        <a href="/Profile/@user.UserId" class="btn btn-sm btn-outline-primary rounded-pill px-3">
-                                                            Xem trang cá nhân
-                                                        </a>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        }
-                                    </div>
-                                }
-                                else
-                                {
-                                    <div class="text-center py-5 text-muted">
-                                        Không tìm thấy người dùng nào.
-                                    </div>
-                                }
-                            </div>
-
-                            <!-- Posts Tab -->
-                            <div class="tab-pane fade" id="posts" role="tabpanel" aria-labelledby="posts-tab">
-                                @if (Model.Posts.Any())
-                                {
-                                    <div class="search-posts-container">
-                                        @foreach (var post in Model.Posts)
-                                        {
-                                            @await Html.PartialAsync("~/Views/Shared/_PostCardPartial.cshtml", post)
-                                        }
-                                    </div>
-                                }
-                                else
-                                {
-                                    <div class="text-center py-5 text-muted">
-                                        Không tìm thấy bài viết nào.
-                                    </div>
-                                }
-                            </div>
+                <!-- Posts Tab -->
+                <div class="tab-pane fade @(!showPeople ? "show active" : "")" id="posts" role="tabpanel">
+                    @if (Model.Posts.Count > 0)
+                    {
+                        <div class="feed-list">
+                            @foreach (var post in Model.Posts)
+                            {
+                                <partial name="_PostCardPartial" model="post" />
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="empty-search-state">
+                            <p>Không tìm thấy bài viết nào.</p>
                         </div>
                     }
                 </div>
             </div>
-        </div>
+        }
     </div>
 </div>
 
-<style>
-    .nav-pills .nav-link {
-        color: var(--bs-body-color);
-        border-radius: 20px;
-        padding: 8px 20px;
-        margin-right: 10px;
-    }
-    .nav-pills .nav-link.active {
-        background-color: var(--bs-primary);
-        color: white;
-    }
-    .search-posts-container {
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-    }
-</style>
+@section Scripts {
+    <script src="~/js/interactions.js" asp-append-version="true"></script>
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/search.css" asp-append-version="true" />
+}
