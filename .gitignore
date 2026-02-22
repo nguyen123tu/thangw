@@ -1,0 +1,45 @@
+## Ignore build outputs
+bin/
+obj/
+**/bin/
+**/obj/
+
+# VS/IDE
+.vs/
+.vscode/
+
+# User settings
+*.user
+*.suo
+*.userosscache
+
+# Visual Studio temporary files
+*.log
+
+# Rider
+.idea/
+
+# NuGet
+*.nupkg
+packages/
+
+# Runtime
+*.dll
+*.exe
+*.pdb
+*.cache
+
+# dotnet publish output
+publish/
+
+# ASP.NET Core
+appsettings.Development.json
+appsettings.*.Local.json
+
+# Static uploads and user data
+wwwroot/uploads/
+wwwroot/user/
+uploads/
+
+# Others
+obj/**/MTU.*
