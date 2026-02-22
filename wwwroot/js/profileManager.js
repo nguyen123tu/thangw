@@ -4,7 +4,7 @@
  * Requirements: 3.1, 3.7, 4.1, 4.4, 4.5, 5.2, 5.4, 5.5, 5.6, 7.2, 7.4, 7.5, 7.6, 7.7, 7.8, 7.9, 7.10, 7.11, 8.7, 8.10, 8.11
  */
 
-(function() {
+(function () {
     'use strict';
 
     // ============================================
@@ -15,7 +15,74 @@
     /**
      * Open the edit profile modal and load current values
      */
-    window.openEditProfileModal = function() {
+    // Interest constants
+    const AVAILABLE_INTERESTS = [
+        // Giải trí & Nghệ thuật
+        { label: "Nghe nhạc", icon: "fa-music" },
+        { label: "Xem phim", icon: "fa-film" },
+        { label: "Đọc sách", icon: "fa-book" },
+        { label: "Chơi game", icon: "fa-gamepad" },
+        { label: "Nhiếp ảnh", icon: "fa-camera" },
+        { label: "Vẽ tranh", icon: "fa-palette" },
+        { label: "Viết lách", icon: "fa-pen-nib" },
+        { label: "Hát hò", icon: "fa-microphone" },
+        { label: "Nhảy múa", icon: "fa-person-running" }, // approximate
+        { label: "Chơi nhạc cụ", icon: "fa-guitar" },
+        { label: "Anime/Manga", icon: "fa-dragon" },
+        { label: "K-pop", icon: "fa-heart" },
+        { label: "Netflix", icon: "fa-tv" },
+        { label: "Board games", icon: "fa-chess-board" },
+
+        // Thể thao & Vận động
+        { label: "Bóng đá", icon: "fa-futbol" },
+        { label: "Bóng rổ", icon: "fa-basketball" },
+        { label: "Cầu lông", icon: "fa-feather" },
+        { label: "Bơi lội", icon: "fa-person-swimming" },
+        { label: "Gym", icon: "fa-dumbbell" },
+        { label: "Yoga", icon: "fa-spa" },
+        { label: "Chạy bộ", icon: "fa-person-running" },
+        { label: "Đạp xe", icon: "fa-bicycle" },
+        { label: "Leo núi", icon: "fa-mountain" },
+        { label: "Bida", icon: "fa-circle" },
+        { label: "Trượt ván", icon: "fa-person-skating" },
+
+        // Đời sống & Ẩm thực
+        { label: "Du lịch", icon: "fa-plane" },
+        { label: "Nấu ăn", icon: "fa-utensils" },
+        { label: "Ăn uống (Foodie)", icon: "fa-burger" },
+        { label: "Cafe", icon: "fa-mug-hot" },
+        { label: "Trà sữa", icon: "fa-glass-water" },
+        { label: "Mua sắm", icon: "fa-bag-shopping" },
+        { label: "Thời trang", icon: "fa-shirt" },
+        { label: "Làm đẹp", icon: "fa-wand-magic-sparkles" },
+        { label: "Ngủ nướng", icon: "fa-bed" },
+        { label: "Nuôi thú cưng", icon: "fa-paw" },
+        { label: "Làm vườn", icon: "fa-leaf" },
+
+        // Công nghệ & Học tập
+        { label: "Lập trình", icon: "fa-code" },
+        { label: "Công nghệ", icon: "fa-laptop" },
+        { label: "Thiết kế", icon: "fa-pen-ruler" },
+        { label: "Ngoại ngữ", icon: "fa-language" },
+        { label: "Học tập", icon: "fa-graduation-cap" },
+        { label: "Chứng khoán", icon: "fa-chart-line" },
+        { label: "Kinh doanh", icon: "fa-briefcase" },
+
+        // Khác
+        { label: "Tình nguyện", icon: "fa-hand-holding-heart" },
+        { label: "Xem Tarot", icon: "fa-star-half-stroke" },
+        { label: "Chiêm tinh", icon: "fa-moon" },
+        { label: "Thiền", icon: "fa-om" },
+        { label: "Hóng drama", icon: "fa-eye" },
+        { label: "Sống ảo", icon: "fa-camera-retro" },
+        { label: "TikTok", icon: "fa-video" },
+        { label: "Nhớ về cô ấy", icon: "fa-seedling" }
+    ];
+
+    /**
+     * Open the edit profile modal and load current values
+     */
+    window.openEditProfileModal = function () {
         const modal = document.getElementById('editProfileModal');
         if (!modal) {
             console.error('Edit profile modal not found');
@@ -31,10 +98,57 @@
             window.ProfileValidation.clearErrors();
         }
 
+        // Init interests grid
+        initInterests();
+
         // Load current values into form fields (already populated by Razor)
         // But we can refresh character counts
         updateCharacterCounts();
     };
+
+    /**
+     * Initialize interests grid
+     */
+    function initInterests() {
+        const grid = document.getElementById('interestsGrid');
+        const input = document.getElementById('interestsInput');
+
+        if (!grid || !input) return;
+
+        const currentInterests = input.value ? input.value.split(',').map(i => i.trim()) : [];
+
+        grid.innerHTML = '';
+
+        AVAILABLE_INTERESTS.forEach(interest => {
+            const chip = document.createElement('div');
+            chip.className = 'interest-chip';
+            if (currentInterests.includes(interest.label)) {
+                chip.classList.add('selected');
+            }
+
+            chip.innerHTML = `<i class="fa-solid ${interest.icon}"></i> ${interest.label}`;
+
+            chip.addEventListener('click', function () {
+                this.classList.toggle('selected');
+                updateInterestsInput();
+            });
+
+            grid.appendChild(chip);
+        });
+    }
+
+    /**
+     * Update hidden interests input based on selection
+     */
+    function updateInterestsInput() {
+        const input = document.getElementById('interestsInput');
+        const grid = document.getElementById('interestsGrid');
+        if (!input || !grid) return;
+
+        const selectedChips = grid.querySelectorAll('.interest-chip.selected');
+        const interests = Array.from(selectedChips).map(chip => chip.textContent.trim());
+        input.value = interests.join(', ');
+    }
 
     /**
      * Close the edit profile modal
@@ -74,7 +188,7 @@
     /**
      * Save profile changes (called by validation module)
      */
-    window.saveProfileChanges = async function() {
+    window.saveProfileChanges = async function () {
         const form = document.getElementById('editProfileForm');
         if (!form) {
             console.error('Edit profile form not found');
@@ -89,7 +203,7 @@
 
         // Get date of birth value
         const dobValue = document.getElementById('dateOfBirthInput')?.value;
-        
+
         // Collect form data as JSON
         const profileData = {
             firstName: document.getElementById('firstNameInput')?.value || '',
@@ -127,7 +241,7 @@
             if (result.success) {
                 closeEditProfileModal();
                 showToast('Cập nhật thông tin thành công', 'success');
-                
+
                 // Reload page to show updated data
                 setTimeout(() => location.reload(), 1000);
             } else {
@@ -162,7 +276,7 @@
     /**
      * Upload avatar image
      */
-    window.uploadAvatar = async function() {
+    window.uploadAvatar = async function () {
         // Try both input IDs (modal and profile page)
         const fileInput = document.getElementById('avatarInput') || document.getElementById('avatarFileInput');
         if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
@@ -212,10 +326,10 @@
                 }
 
                 showToast('Cập nhật ảnh đại diện thành công', 'success');
-                
+
                 // Clear file input
                 fileInput.value = '';
-                
+
                 // Reload page after 1 second to update all avatars
                 setTimeout(() => location.reload(), 1000);
             } else {
@@ -236,7 +350,7 @@
     /**
      * Upload cover image
      */
-    window.uploadCoverImage = async function() {
+    window.uploadCoverImage = async function () {
         // Try both input IDs (modal and profile page)
         const fileInput = document.getElementById('coverImageInput') || document.getElementById('coverFileInput');
         if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
@@ -286,10 +400,10 @@
                 }
 
                 showToast('Cập nhật ảnh bìa thành công', 'success');
-                
+
                 // Clear file input
                 fileInput.value = '';
-                
+
                 // Reload page after 1 second to update all images
                 setTimeout(() => location.reload(), 1000);
             } else {
@@ -311,7 +425,7 @@
      * Send friend request
      * @param {number} friendId - The ID of the user to send friend request to
      */
-    window.sendFriendRequest = async function(friendId) {
+    window.sendFriendRequest = async function (friendId) {
         if (!friendId) {
             console.error('Friend ID is required');
             return;
@@ -352,7 +466,7 @@
      * Accept friend request
      * @param {number} friendId - The ID of the user who sent the friend request
      */
-    window.acceptFriendRequest = async function(friendId) {
+    window.acceptFriendRequest = async function (friendId) {
         if (!friendId) {
             console.error('Friend ID is required');
             return;
@@ -385,7 +499,7 @@
                 }
 
                 showToast('Đã chấp nhận lời mời kết bạn', 'success');
-                
+
                 // Optionally reload page to show updated friend list
                 setTimeout(() => location.reload(), 1500);
             } else {
@@ -407,7 +521,7 @@
      * Decline friend request
      * @param {number} friendId - The ID of the user who sent the friend request
      */
-    window.declineFriendRequest = async function(friendId) {
+    window.declineFriendRequest = async function (friendId) {
         if (!friendId) {
             console.error('Friend ID is required');
             return;
@@ -452,7 +566,7 @@
     /**
      * Load friend suggestions
      */
-    window.loadFriendSuggestions = async function() {
+    window.loadFriendSuggestions = async function () {
         const suggestionsContainer = document.getElementById('friendSuggestionsContainer');
         if (!suggestionsContainer) {
             console.error('Friend suggestions container not found');
@@ -473,7 +587,7 @@
             // Render suggestions dynamically
             if (suggestions && suggestions.length > 0) {
                 suggestionsContainer.innerHTML = '';
-                
+
                 suggestions.forEach(friend => {
                     const friendCard = createFriendSuggestionCard(friend);
                     suggestionsContainer.insertAdjacentHTML('beforeend', friendCard);
@@ -482,7 +596,7 @@
                 // Attach event handlers to "Add Friend" buttons
                 const addFriendButtons = suggestionsContainer.querySelectorAll('.btn-add-friend');
                 addFriendButtons.forEach(button => {
-                    button.addEventListener('click', function() {
+                    button.addEventListener('click', function () {
                         const friendId = parseInt(this.getAttribute('data-friend-id'));
                         if (friendId) {
                             sendFriendRequest(friendId);
@@ -506,7 +620,7 @@
     function createFriendSuggestionCard(friend) {
         const avatar = friend.avatar || '/assets/user.png';
         const bio = friend.bio ? `<p>${escapeHtml(friend.bio)}</p>` : '';
-        
+
         return `
             <div class="friend-card suggested">
                 <img src="${avatar}" alt="${escapeHtml(friend.fullName)}">
@@ -535,7 +649,7 @@
     function showToast(message, type = 'info') {
         // Check if Bootstrap toast is available
         const toastContainer = document.getElementById('toastContainer');
-        
+
         if (!toastContainer) {
             // Create toast container if it doesn't exist
             const container = document.createElement('div');
@@ -570,7 +684,7 @@
         toast.show();
 
         // Remove toast element after it's hidden
-        toastElement.addEventListener('hidden.bs.toast', function() {
+        toastElement.addEventListener('hidden.bs.toast', function () {
             toastElement.remove();
         });
     }
@@ -589,7 +703,7 @@
             button.disabled = true;
             button.classList.add('btn-secondary');
             button.classList.remove('btn-primary', 'btn-add-friend');
-            
+
             // Update icon
             const icon = button.querySelector('i');
             if (icon) {
@@ -600,7 +714,7 @@
             button.disabled = true;
             button.classList.add('btn-secondary');
             button.classList.remove('btn-primary', 'btn-add-friend');
-            
+
             // Update icon
             const icon = button.querySelector('i');
             if (icon) {
@@ -631,9 +745,9 @@
         const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
         const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
         const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif'];
-        
+
         const isValidType = allowedTypes.includes(file.type) || allowedExtensions.includes(fileExtension);
-        
+
         if (!isValidType) {
             showToast('Chỉ chấp nhận file ảnh định dạng JPG, PNG, hoặc GIF', 'error');
             return false;
@@ -667,7 +781,7 @@
         // Auto-upload avatar when file is selected
         const avatarFileInput = document.getElementById('avatarFileInput');
         if (avatarFileInput) {
-            avatarFileInput.addEventListener('change', function() {
+            avatarFileInput.addEventListener('change', function () {
                 if (this.files && this.files.length > 0) {
                     uploadAvatar();
                 }
@@ -677,7 +791,7 @@
         // Auto-upload cover when file is selected
         const coverFileInput = document.getElementById('coverFileInput');
         if (coverFileInput) {
-            coverFileInput.addEventListener('change', function() {
+            coverFileInput.addEventListener('change', function () {
                 if (this.files && this.files.length > 0) {
                     uploadCoverImage();
                 }

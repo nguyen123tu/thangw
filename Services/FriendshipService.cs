@@ -71,25 +71,49 @@ namespace MTU.Services
             try
             {
                 var suggestedUsers = await _userRepository.GetSuggestedFriendsAsync(currentUserId, 10);
+
+                // Lấy pending requests một lần duy nhất (tránh N+1)
+                var pendingTargetIds = (await _context.Friendships
+                    .Where(f => f.UserId == currentUserId && f.Status == "pending")
+                    .Select(f => f.FriendId)
+                    .ToListAsync()).ToHashSet();
+
                 var friendDtos = new List<FriendDto>();
 
                 foreach (var user in suggestedUsers)
                 {
                     var fullName = $"{user.FirstName} {user.LastName}".Trim();
                     if (string.IsNullOrWhiteSpace(fullName))
-                    {
                         fullName = user.Username;
+
+                    // Số bạn chung thật sự
+                    var mutualCount = await _userRepository.GetMutualFriendCountAsync(currentUserId, user.UserId);
+
+                    // Đã gửi pending hay chưa
+                    var hasPending = pendingTargetIds.Contains(user.UserId);
+
+                    // Bio hiển thị: ưu tiên class/major nếu có
+                    var displayBio = user.Bio;
+                    if (string.IsNullOrWhiteSpace(displayBio) && user.Student != null)
+                    {
+                        var parts = new List<string>();
+                        if (!string.IsNullOrEmpty(user.Student.Class))
+                            parts.Add($"Lớp {user.Student.Class}");
+                        if (!string.IsNullOrEmpty(user.Student.Faculty))
+                            parts.Add(user.Student.Faculty);
+                        displayBio = string.Join(" · ", parts);
                     }
 
                     friendDtos.Add(new FriendDto
                     {
-                        UserId = user.UserId,
-                        FullName = fullName,
-                        Avatar = user.Avatar ?? "/assets/user.png",
-                        Bio = user.Bio,
-                        IsFriend = false,
-                        HasPendingRequest = false,
-                        MutualFriendsCount = 0                    });
+                        UserId            = user.UserId,
+                        FullName          = fullName,
+                        Avatar            = user.Avatar ?? "/assets/user.png",
+                        Bio               = displayBio,
+                        IsFriend          = false,
+                        HasPendingRequest = hasPending,
+                        MutualFriendsCount = mutualCount
+                    });
                 }
 
                 return friendDtos;
@@ -99,7 +123,8 @@ namespace MTU.Services
                 _logger.LogError(ex, "Error getting friend suggestions for user {UserId}", currentUserId);
                 return new List<FriendDto>();
             }
-        }        public async Task<List<FriendRequestDto>> GetPendingRequestsAsync(int userId)
+        }
+        public async Task<List<FriendRequestDto>> GetPendingRequestsAsync(int userId)
         {
             try
             {

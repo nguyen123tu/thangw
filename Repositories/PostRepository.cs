@@ -138,6 +138,7 @@ namespace MTU.Repositories
                 .Include(p => p.User)
                 .Where(p => !p.IsDeleted && 
                             p.Privacy == "public" && 
+                            p.Content != null && 
                             p.Content.ToLower().Contains(searchTerm))
                 .OrderByDescending(p => p.CreatedAt)
                 .Take(limit)

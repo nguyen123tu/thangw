@@ -30,6 +30,8 @@ builder.Services.AddScoped<IInteractionService, InteractionService>();
 builder.Services.AddScoped<IProfileService, ProfileService>();
 builder.Services.AddScoped<IFriendshipService, FriendshipService>();
 builder.Services.AddScoped<IProfileUpdateService, ProfileUpdateService>();
+builder.Services.AddHttpClient();
+builder.Services.AddScoped<IGeminiService, GeminiService>();
 
 // Add Cookie Authentication
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
@@ -62,8 +64,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-// Auto-patch database for new features
-await MTU.Data.DbPatcher.ApplyPatchesAsync(app);
+
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();

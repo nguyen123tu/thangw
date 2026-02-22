@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\2026 neww\\v1_code web\\DevMTU\\MTU.csproj": {}
+    "D:\\DevMTU-20260210T030108Z-1-001\\DevMTU\\MTU.csproj": {}
   },
   "projects": {
-    "D:\\2026 neww\\v1_code web\\DevMTU\\MTU.csproj": {
+    "D:\\DevMTU-20260210T030108Z-1-001\\DevMTU\\MTU.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\2026 neww\\v1_code web\\DevMTU\\MTU.csproj",
+        "projectUniqueName": "D:\\DevMTU-20260210T030108Z-1-001\\DevMTU\\MTU.csproj",
         "projectName": "MTU",
-        "projectPath": "D:\\2026 neww\\v1_code web\\DevMTU\\MTU.csproj",
+        "projectPath": "D:\\DevMTU-20260210T030108Z-1-001\\DevMTU\\MTU.csproj",
         "packagesPath": "C:\\Users\\TuDepTrai\\.nuget\\packages\\",
-        "outputPath": "D:\\2026 neww\\v1_code web\\DevMTU\\obj\\",
+        "outputPath": "D:\\DevMTU-20260210T030108Z-1-001\\DevMTU\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\TuDepTrai\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -48,10 +48,6 @@
               "target": "Package",
               "version": "[8.0.0, )"
             },
-            "Microsoft.EntityFrameworkCore.InMemory": {
-              "target": "Package",
-              "version": "[8.0.0, )"
-            },
             "Microsoft.EntityFrameworkCore.SqlServer": {
               "target": "Package",
               "version": "[8.0.0, )"
@@ -61,20 +57,6 @@
               "suppressParent": "All",
               "target": "Package",
               "version": "[8.0.0, )"
-            },
-            "Microsoft.NET.Test.Sdk": {
-              "target": "Package",
-              "version": "[17.8.0, )"
-            },
-            "xunit": {
-              "target": "Package",
-              "version": "[2.6.2, )"
-            },
-            "xunit.runner.visualstudio": {
-              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
-              "suppressParent": "All",
-              "target": "Package",
-              "version": "[2.5.4, )"
             }
           },
           "imports": [
@@ -96,7 +78,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.100/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.124/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

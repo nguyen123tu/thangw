@@ -73,36 +73,110 @@ namespace MTU.Repositories
 
         public async Task<List<User>> GetSuggestedFriendsAsync(int currentUserId, int limit)
         {
-            var friendIds = await _context.Friendships
-                .Where(f => (f.UserId == currentUserId || f.FriendId == currentUserId) 
+            // ── 1. Lấy danh sách đã kết bạn / đang pending ──────────────────
+            var excludedIds = await _context.Friendships
+                .Where(f => (f.UserId == currentUserId || f.FriendId == currentUserId)
                             && (f.Status == "accepted" || f.Status == "pending"))
                 .Select(f => f.UserId == currentUserId ? f.FriendId : f.UserId)
                 .ToListAsync();
 
+            excludedIds.Add(currentUserId); // loại bản thân
+
+            // ── 2. Lấy thông tin người dùng hiện tại ─────────────────────────
             var currentUser = await _context.Users
                 .Include(u => u.Student)
                 .FirstOrDefaultAsync(u => u.UserId == currentUserId);
 
-            var currentClass = currentUser?.Student?.Class;
+            var currentClass  = currentUser?.Student?.Class;
+            var currentFaculty = currentUser?.Student?.Faculty;
 
-            IQueryable<User> query = _context.Users
+            // ── 3. Danh sách bạn đã accepted ──────────────────────────────────
+            var myFriendIds = await _context.Friendships
+                .Where(f => (f.UserId == currentUserId || f.FriendId == currentUserId)
+                            && f.Status == "accepted")
+                .Select(f => f.UserId == currentUserId ? f.FriendId : f.UserId)
+                .ToListAsync();
+
+            // ── 4. Lấy pool ứng viên (lấy nhiều rồi score in-memory) ──────────
+            var candidates = await _context.Users
                 .Include(u => u.Student)
-                .Where(u => u.UserId != currentUserId 
-                            && !friendIds.Contains(u.UserId)
-                            && u.IsActive);
+                .Where(u => !excludedIds.Contains(u.UserId) && u.IsActive)
+                .ToListAsync();
 
-            if (!string.IsNullOrEmpty(currentClass))
+            // ── 5. Tính điểm cho từng ứng viên ───────────────────────────────
+            // Lấy toàn bộ friend-ids của tất cả candidates trong 1 query
+            var candidateIds = candidates.Select(u => u.UserId).ToList();
+
+            var candidateFriendships = await _context.Friendships
+                .Where(f => (candidateIds.Contains(f.UserId) || candidateIds.Contains(f.FriendId))
+                            && f.Status == "accepted")
+                .Select(f => new { f.UserId, f.FriendId })
+                .ToListAsync();
+
+            // Build dict: candidateId → set of their friend ids
+            var candidateFriendMap = candidateIds.ToDictionary(
+                id => id,
+                id => candidateFriendships
+                    .Where(f => f.UserId == id || f.FriendId == id)
+                    .Select(f => f.UserId == id ? f.FriendId : f.UserId)
+                    .ToHashSet()
+            );
+
+            var scored = candidates.Select(u =>
             {
-                // Prioritize users in the same class
-                query = query.OrderByDescending(u => u.Student != null && u.Student.Class == currentClass)
-                             .ThenByDescending(u => u.CreatedAt);
-            }
-            else
-            {
-                query = query.OrderByDescending(u => u.CreatedAt);
-            }
-            
-            return await query.Take(limit).ToListAsync();
+                int score = 0;
+
+                // +10 per mutual friend (friend-of-friend)
+                if (candidateFriendMap.TryGetValue(u.UserId, out var theirFriends))
+                {
+                    int mutualCount = theirFriends.Intersect(myFriendIds).Count();
+                    score += mutualCount * 10;
+                }
+
+                // +20 same class (cùng lớp – signal mạnh nhất)
+                if (!string.IsNullOrEmpty(currentClass)
+                    && u.Student?.Class == currentClass)
+                    score += 20;
+
+                // +8 same faculty (cùng khoa)
+                if (!string.IsNullOrEmpty(currentFaculty)
+                    && u.Student?.Faculty == currentFaculty
+                    && u.Student?.Class != currentClass) // tránh cộng đôi
+                    score += 8;
+
+                // +2 mới tạo tài khoản trong 7 ngày
+                if ((DateTime.Now - u.CreatedAt).TotalDays <= 7)
+                    score += 2;
+
+                return new { User = u, Score = score };
+            })
+            .OrderByDescending(x => x.Score)
+            .ThenByDescending(x => x.User.CreatedAt)
+            .Take(limit)
+            .Select(x => x.User)
+            .ToList();
+
+            return scored;
+        }
+
+        /// <summary>
+        /// Tính số bạn chung giữa currentUser và targetUser
+        /// </summary>
+        public async Task<int> GetMutualFriendCountAsync(int currentUserId, int targetUserId)
+        {
+            var myFriends = (await _context.Friendships
+                .Where(f => (f.UserId == currentUserId || f.FriendId == currentUserId)
+                            && f.Status == "accepted")
+                .Select(f => f.UserId == currentUserId ? f.FriendId : f.UserId)
+                .ToListAsync()).ToHashSet();
+
+            var theirFriends = (await _context.Friendships
+                .Where(f => (f.UserId == targetUserId || f.FriendId == targetUserId)
+                            && f.Status == "accepted")
+                .Select(f => f.UserId == targetUserId ? f.FriendId : f.UserId)
+                .ToListAsync()).ToHashSet();
+
+            return myFriends.Intersect(theirFriends).Count();
         }
 
         public async Task<string> SaveAvatarAsync(IFormFile file, int userId)

@@ -44,13 +44,15 @@ namespace MTU.Services
                 {
                     studentDto = new StudentDto
                     {
-                        MSSV = student.MSSV ?? string.Empty,
-                        Class = student.Class ?? string.Empty,
-                        Faculty = student.Faculty ?? string.Empty,
-                        GPA = student.GPA,
-                        DateOfBirth = student.DateOfBirth,
+                        MSSV         = student.MSSV ?? string.Empty,
+                        Class        = student.Class ?? string.Empty,
+                        Faculty      = student.Faculty ?? string.Empty,
+                        GPA          = student.GPA,
+                        DateOfBirth  = student.DateOfBirth,
                         PlaceOfBirth = student.PlaceOfBirth,
-                        Gender = student.Gender
+                        Gender       = student.Gender,
+                        Course       = student.Course,
+                        TotalCredits = student.TotalCredits
                     };
                 }                var posts = await _postService.GetUserPostsAsync(userId, currentUserId);                var fullName = $"{user.FirstName} {user.LastName}".Trim();
                 if (string.IsNullOrWhiteSpace(fullName))

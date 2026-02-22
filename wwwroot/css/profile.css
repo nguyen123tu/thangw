@@ -6,65 +6,67 @@
 .profile-page-container {
   width: 100%;
   height: calc(100vh - 60px);
-  overflow-y: auto;
   background: var(--lofi-cream);
   padding: 20px;
   margin-top: 60px;
+  display: flex;
+  overflow: hidden;
+  /* căm trang cuộn ngoài */
 }
 
+/* Row + columns chiếm hết chiều cao */
+.profile-page-container>.container-fluid {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
 
-/* ============================================
-   PROFILE HEADER CARD LAYOUT
-   ============================================ */
+.profile-page-container .row {
+  flex: 1;
+  overflow: hidden;
+  margin: 0 -10px;
+}
 
-.profile-header-card {
+/* Cột trái (sidebar) và cột phải đều cuộn độc lập */
+.profile-page-container .col-md-4,
+.profile-page-container .col-lg-3 {
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0 10px;
+}
+
+.profile-page-container .col-md-8,
+.profile-page-container .col-lg-9 {
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0 10px;
+}
+
+.profile-sidebar {
+  position: relative;
+  /* không cần sticky nữa */
+  top: unset;
   background: var(--lofi-white);
   border: 3px solid var(--lofi-dark);
-  border-radius: 15px;
   box-shadow: 8px 8px 0 var(--lofi-dark);
-  overflow: hidden;
+  padding: 32px 24px;
+  height: fit-content;
+  /* thực tế nội dung */
+}
+
+/* Avatar Section */
+.profile-avatar-section {
   margin-bottom: 24px;
-  position: relative;
 }
 
-/* Cover Image */
-.profile-cover-section {
-  width: 100%;
-  height: 250px;
-  background: var(--lofi-sage);
+.profile-avatar-wrapper-large {
   position: relative;
-  overflow: hidden;
-  border-bottom: 3px solid var(--lofi-dark);
-}
-
-.profile-cover-section img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-/* Info Section (Avatar + Details) */
-.profile-info-section {
-  padding: 0 32px 24px 32px;
-  position: relative;
-  display: flex;
-  align-items: flex-end;
-  gap: 24px;
-  margin-top: -60px;
-  /* Pull content up to overlap cover */
-  pointer-events: none;
-  /* Allow clicks to pass through to cover button */
-}
-
-/* Avatar Overlap */
-.profile-avatar-wrapper-overlap {
-  position: relative;
-  width: 160px;
-  height: 160px;
-  flex-shrink: 0;
-  z-index: 2;
-  pointer-events: auto;
-  /* Restore clicks */
+  width: 180px;
+  height: 180px;
+  margin: 0 auto;
 }
 
 .profile-avatar-large {
@@ -73,273 +75,168 @@
   border-radius: 50%;
   border: 6px solid var(--lofi-white);
   outline: 3px solid var(--lofi-dark);
-  box-shadow: 4px 4px 0 var(--lofi-dark);
+  box-shadow: 6px 6px 0 var(--lofi-dark);
   object-fit: cover;
-  background: var(--lofi-cream);
+  background: var(--lofi-sage);
 }
 
-.edit-avatar-btn-overlap {
+.edit-avatar-btn-large {
   position: absolute;
-  bottom: 5px;
-  right: 5px;
-  width: 40px;
-  height: 40px;
+  bottom: 10px;
+  right: 10px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   background: var(--lofi-white);
-  border: 2px solid var(--lofi-dark);
+  border: 3px solid var(--lofi-dark);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 2px 2px 0 var(--lofi-dark);
+  box-shadow: 3px 3px 0 var(--lofi-dark);
   transition: all 0.2s ease;
-  font-size: 16px;
+  opacity: 0;
+  visibility: hidden;
+  font-size: 18px;
   color: var(--lofi-dark);
 }
 
-.edit-avatar-btn-overlap:hover {
+.profile-avatar-wrapper-large:hover .edit-avatar-btn-large {
+  opacity: 1;
+  visibility: visible;
+}
+
+.edit-avatar-btn-large:hover {
   transform: translateY(2px);
-  box-shadow: none;
+  box-shadow: 1px 1px 0 var(--lofi-dark);
 }
 
-/* Details Wrapper */
-.profile-details-wrapper {
-  flex: 1;
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  padding-bottom: 10px;
-  padding-top: 70px;
-  /* Space for hidden part of avatar due to margin-top */
-  pointer-events: none;
-  /* Ensure wrapper doesn't block lower layers */
+/* Sidebar Info */
+.profile-sidebar-info {
+  margin-bottom: 24px;
 }
 
-/* Space for hidden part of avatar due to margin-top */
-.profile-text-info {
+.profile-sidebar-name {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--lofi-dark);
+  margin-bottom: 8px;
+  line-height: 1.2;
+}
+
+.profile-sidebar-meta {
+  font-size: 14px;
+  color: var(--lofi-muted);
+  margin-bottom: 12px;
+}
+
+.profile-sidebar-bio {
+  font-size: 15px;
+  color: var(--lofi-dark);
+  line-height: 1.5;
+  margin-top: 12px;
+}
+
+.profile-placeholder-text {
+  color: var(--lofi-muted);
+  font-style: italic;
+}
+
+/* Sidebar Details - Location, Gender, Faculty */
+.profile-sidebar-details {
+  margin-top: 16px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  pointer-events: auto;
-  /* Restore text selection/clicks */
+  gap: 10px;
 }
 
-.profile-name {
-  font-size: 38px;
-  /* Larger */
-  font-weight: 900;
-  /* Bolder */
-  color: var(--lofi-dark);
-  line-height: 1.1;
-  margin-bottom: 8px;
-  letter-spacing: -0.5px;
-  /* Tighter tracking */
-  text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.05);
-  /* Subtle depth */
-}
-
-.profile-role {
-  font-size: 16px;
-  color: #7f8c8d;
-  /* Explicit lighter grey */
-  margin: 0 0 2px 0;
-  font-weight: 600;
-}
-
-.profile-location {
+.sidebar-detail-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   font-size: 14px;
-  color: #95a5a6;
-  /* Even lighter */
-  margin-top: 4px;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  color: var(--lofi-dark);
 }
 
-.profile-actions-row {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 5px;
-  align-items: center;
-  /* Ensure vertical alignment */
-  pointer-events: auto;
-  /* Restore clicks on buttons */
+.sidebar-detail-item i {
+  width: 20px;
+  text-align: center;
+  color: var(--lofi-sage);
+  font-size: 16px;
 }
 
-/* Primary Action Pill (Edit) */
-.btn-action-pill {
-  padding: 10px 24px;
-  border-radius: 50px;
+.sidebar-detail-item span {
+  color: var(--lofi-muted);
+}
+
+/* Sidebar Actions */
+.profile-sidebar-actions {
+  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.btn-profile-primary,
+.btn-profile-secondary {
+  width: 100%;
+  padding: 14px 20px;
+  border-radius: 8px;
   font-weight: 600;
   font-size: 15px;
   cursor: pointer;
-  border: 2px solid var(--lofi-dark);
-  box-shadow: 3px 3px 0 var(--lofi-dark);
+  border: 3px solid var(--lofi-dark);
+  box-shadow: 4px 4px 0 var(--lofi-dark);
   transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: var(--lofi-sage);
-  color: var(--lofi-dark);
-}
-
-.btn-action-pill:hover {
-  transform: translateY(2px);
-  box-shadow: 1px 1px 0 var(--lofi-dark);
-  background: #95a58a;
-  /* Slightly darker sage */
-}
-
-/* Secondary Action Icon (Settings) */
-.btn-action-icon {
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  border: 2px solid var(--lofi-dark);
-  background: var(--lofi-white);
-  color: var(--lofi-dark);
-  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
-  box-shadow: 3px 3px 0 var(--lofi-dark);
-  transition: all 0.2s ease;
-}
-
-.btn-action-icon:hover {
-  transform: translateY(2px);
-  box-shadow: 1px 1px 0 var(--lofi-dark);
-  background: var(--lofi-cream);
-}
-
-
-/* Tags Row */
-.profile-tags-row {
-  padding: 0 32px 24px 32px;
-  display: flex;
-  flex-wrap: wrap;
   gap: 8px;
 }
 
-.profile-mini-tag {
-  font-size: 12px;
-  padding: 4px 10px;
-  border-radius: 20px;
-  background: var(--lofi-cream);
-  border: 1px solid var(--lofi-dark);
-  color: var(--lofi-muted);
-  font-weight: 600;
-}
-
-/* Tabs Override for Header Card (Pill Style) */
-.profile-tabs-new {
-  border-top: none;
-  border-bottom: none;
-  background: var(--lofi-white);
-  padding: 16px 24px;
-  display: flex;
-  gap: 12px;
-  /* Space between pills */
-  justify-content: flex-start;
-  /* Left align pills */
-  flex-wrap: wrap;
-}
-
-.profile-tab-new {
-  font-size: 15px;
-  padding: 10px 20px;
-  color: var(--lofi-muted);
-  background: var(--lofi-cream);
-  /* Default pill background */
-  border: 2px solid transparent;
-  /* Reserve space for border */
-  border-radius: 50px;
-  /* Pill shape */
-  font-weight: 600;
-  transition: all 0.2s ease;
-  bottom: 0;
-  /* Reset previous */
-  flex: initial;
-  /* Don't stretch */
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.profile-tab-new:hover {
-  color: var(--lofi-dark);
-  background: #e8e8e3;
-  /* Slightly darker cream */
-  transform: translateY(-2px);
-}
-
-.profile-tab-new.active {
-  color: var(--lofi-dark);
+.btn-profile-primary {
   background: var(--lofi-sage);
-  border: 2px solid var(--lofi-dark);
-  box-shadow: 2px 2px 0 var(--lofi-dark);
-  /* Pop effect */
-  border-bottom-color: var(--lofi-dark);
-  /* Reset override */
+  color: var(--lofi-dark);
 }
 
-/* Content Area */
-.profile-content-area {
-  width: 100%;
-  min-height: 300px;
+.btn-profile-secondary {
+  background: var(--lofi-white);
+  color: var(--lofi-dark);
 }
 
-/* Override Main Panel */
-.profile-main-panel {
-  background: transparent;
-  border: none;
+.btn-profile-primary:hover,
+.btn-profile-secondary:hover {
+  transform: translateY(4px);
   box-shadow: none;
-  overflow: visible;
 }
 
-/* Responsive */
-@media (max-width: 900px) {
-  .profile-info-section {
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    margin-top: -50px;
-    gap: 16px;
-  }
-
-  .profile-details-wrapper {
-    flex-direction: column;
-    align-items: center;
-    gap: 16px;
-    padding-top: 0;
-    width: 100%;
-  }
-
-  .profile-actions-row {
-    width: 100%;
-    justify-content: center;
-  }
-
-  .profile-tags-row {
-    justify-content: center;
-  }
-
-  .profile-cover-section {
-    height: 180px;
-  }
-
-  .profile-avatar-wrapper-overlap {
-    width: 120px;
-    height: 120px;
-  }
-
-  .profile-name {
-    font-size: 26px;
-  }
+/* Sidebar Stats */
+.profile-sidebar-stats {
+  display: flex;
+  justify-content: space-around;
+  padding-top: 20px;
+  border-top: 2px solid var(--lofi-dark);
 }
 
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.stat-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--lofi-dark);
+}
+
+.stat-label {
+  font-size: 12px;
+  color: var(--lofi-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
 
 /* ============================================
    RIGHT PANEL - Cover, Tabs, Content
@@ -626,23 +523,6 @@
   gap: 12px;
 }
 
-.stat-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  /* Bouncy spring */
-  cursor: default;
-  padding: 8px;
-  border-radius: 8px;
-}
-
-.stat-item:hover {
-  transform: scale(1.1);
-  background: rgba(0, 0, 0, 0.02);
-}
-
 .friend-card-new:hover {
   transform: translateY(4px);
   box-shadow: none;
@@ -675,85 +555,6 @@
   -webkit-box-orient: vertical;
 }
 
-/* ============================================
-   RESPONSIVE DESIGN
-   ============================================ */
-
-@media (max-width: 768px) {
-  .profile-page-container {
-    padding: 12px;
-  }
-
-  .profile-sidebar {
-    position: relative;
-    top: 0;
-    margin-bottom: 20px;
-  }
-
-  .profile-avatar-wrapper-large {
-    width: 140px;
-    height: 140px;
-  }
-
-  .profile-sidebar-name {
-    font-size: 24px;
-  }
-
-  .profile-cover-section {
-    height: 200px;
-  }
-
-  .profile-tabs-new {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  .profile-tab-new {
-    white-space: nowrap;
-    font-size: 14px;
-    padding: 12px 16px;
-  }
-
-  .profile-tab-content-new {
-    padding: 16px;
-  }
-
-  .info-grid-new {
-    grid-template-columns: 1fr;
-  }
-
-  .friends-grid-new {
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  }
-}
-
-@media (max-width: 480px) {
-  .profile-avatar-wrapper-large {
-    width: 120px;
-    height: 120px;
-  }
-
-  .profile-sidebar-name {
-    font-size: 20px;
-  }
-
-  .stat-value {
-    font-size: 20px;
-  }
-
-  .profile-cover-section {
-    height: 150px;
-  }
-
-  .friends-grid-new {
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  }
-
-  .friend-card-new img {
-    width: 60px;
-    height: 60px;
-  }
-}
 
 /* ============================================
    EDIT PROFILE MODAL (Keep existing styles)
@@ -915,4 +716,333 @@ textarea.form-control {
 .btn-profile-secondary:disabled {
   opacity: 0.7;
   cursor: not-allowed;
+}
+
+/* ============================================
+   STUDENT INFO ACCORDION CARD
+   ============================================ */
+
+.student-info-card {
+  margin-top: 16px;
+  border-top: 2px solid var(--lofi-dark);
+  padding-top: 4px;
+}
+
+/* Toggle button */
+.student-info-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: none;
+  border: none;
+  padding: 14px 4px;
+  cursor: pointer;
+  color: var(--lofi-dark);
+  font-family: inherit;
+  transition: background 0.15s ease;
+  border-radius: 8px;
+}
+
+.student-info-toggle:hover {
+  background: var(--lofi-cream);
+}
+
+.toggle-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--lofi-dark);
+}
+
+.toggle-icon-wrap {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: var(--lofi-sage);
+  border: 2px solid var(--lofi-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  color: var(--lofi-dark);
+  flex-shrink: 0;
+}
+
+.toggle-chevron {
+  font-size: 13px;
+  color: var(--lofi-muted);
+  transition: transform 0.3s ease;
+}
+
+.student-info-toggle[aria-expanded="true"] .toggle-chevron {
+  transform: rotate(180deg);
+}
+
+/* Collapsible body - CSS height animation */
+.student-info-body {
+  overflow: hidden;
+  max-height: 0;
+  transition: max-height 0.38s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.28s ease;
+  opacity: 0;
+}
+
+.student-info-body.open {
+  max-height: 600px;
+  /* lớn hơn chiều cao thực tế */
+  opacity: 1;
+}
+
+.student-info-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px 0 12px;
+}
+
+/* Info rows */
+.si-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 9px 6px;
+  border-radius: 6px;
+  transition: background 0.15s;
+}
+
+.si-row:hover {
+  background: var(--lofi-cream);
+}
+
+.si-label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--lofi-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-width: 90px;
+}
+
+.si-label i {
+  width: 14px;
+  text-align: center;
+  color: var(--lofi-sage);
+}
+
+.si-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--lofi-dark);
+  text-align: right;
+  word-break: break-word;
+}
+
+.si-value.mono {
+  font-family: 'Courier New', monospace;
+  letter-spacing: 0.5px;
+}
+
+/* GPA badge */
+.gpa-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  border: 2px solid var(--lofi-dark);
+  white-space: nowrap;
+}
+
+.gpa-excellent {
+  background: #d4edda;
+  color: #155724;
+}
+
+.gpa-good {
+  background: #cce5ff;
+  color: #004085;
+}
+
+.gpa-average {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.gpa-low {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+/* ============================================
+   PROFILE PAGE LAYOUT
+   ============================================ */
+.profile-page-container {
+  display: flex;
+  flex-direction: row;
+  height: calc(100vh - 60px);
+  /* Adjust 60px if you have a fixed header height */
+  overflow: hidden;
+  /* Hide main scrollbar if content overflows */
+}
+
+.profile-page-container .col-md-4,
+.profile-page-container .col-lg-3,
+.profile-page-container .col-md-8,
+.profile-page-container .col-lg-9 {
+  height: 100%;
+  overflow-y: auto;
+}
+
+
+/* ============================================
+   CUSTOM SCROLLBAR - Cột trái và phải
+   ============================================ */
+
+/* Scrollbar cho cả hai cột */
+.profile-page-container .col-md-4::-webkit-scrollbar,
+.profile-page-container .col-lg-3::-webkit-scrollbar,
+.profile-page-container .col-md-8::-webkit-scrollbar,
+.profile-page-container .col-lg-9::-webkit-scrollbar {
+  width: 6px;
+}
+
+.profile-page-container .col-md-4::-webkit-scrollbar-track,
+.profile-page-container .col-lg-3::-webkit-scrollbar-track,
+.profile-page-container .col-md-8::-webkit-scrollbar-track,
+.profile-page-container .col-lg-9::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.profile-page-container .col-md-4::-webkit-scrollbar-thumb,
+.profile-page-container .col-lg-3::-webkit-scrollbar-thumb,
+.profile-page-container .col-md-8::-webkit-scrollbar-thumb,
+.profile-page-container .col-lg-9::-webkit-scrollbar-thumb {
+  background: var(--lofi-sage);
+  border-radius: 999px;
+  border: 1px solid var(--lofi-dark);
+  min-height: 40px;
+}
+
+.profile-page-container .col-md-4::-webkit-scrollbar-thumb:hover,
+.profile-page-container .col-lg-3::-webkit-scrollbar-thumb:hover,
+.profile-page-container .col-md-8::-webkit-scrollbar-thumb:hover,
+.profile-page-container .col-lg-9::-webkit-scrollbar-thumb:hover {
+  background: var(--lofi-dark);
+}
+
+/* Firefox */
+.profile-page-container .col-md-4,
+.profile-page-container .col-lg-3,
+.profile-page-container .col-md-8,
+.profile-page-container .col-lg-9 {
+  scrollbar-width: thin;
+  scrollbar-color: var(--lofi-sage) transparent;
+}
+
+/* ============================================
+   RESPONSIVE - Tắt split-pane trên mobile
+   ============================================ */
+
+@media (max-width: 768px) {
+  .profile-page-container {
+    height: auto;
+    overflow: visible;
+    flex-direction: column;
+    padding: 12px;
+  }
+
+  .profile-page-container>.container-fluid {
+    overflow: visible;
+  }
+
+  .profile-page-container .row {
+    overflow: visible;
+    flex-direction: column;
+  }
+
+  .profile-page-container .col-md-4,
+  .profile-page-container .col-lg-3,
+  .profile-page-container .col-md-8,
+  .profile-page-container .col-lg-9 {
+    height: auto;
+    overflow: visible;
+    padding: 0;
+  }
+
+  .profile-sidebar {
+    margin-bottom: 20px;
+  }
+
+  .profile-sidebar-name {
+    font-size: 24px;
+  }
+
+  .profile-cover-section {
+    height: 200px;
+  }
+
+  .profile-tabs-new {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .profile-tab-new {
+    white-space: nowrap;
+    font-size: 14px;
+    padding: 12px 16px;
+  }
+
+  .profile-tab-content-new {
+    padding: 16px;
+  }
+
+  .info-grid-new {
+    grid-template-columns: 1fr;
+  }
+
+  .friends-grid-new {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+
+  .profile-page-container .col-md-4,
+  .profile-page-container .col-lg-3,
+  .profile-page-container .col-md-8,
+  .profile-page-container .col-lg-9 {
+    height: auto;
+    overflow: visible;
+  }
+
+  .profile-sidebar-name {
+    font-size: 20px;
+  }
+
+  .stat-value {
+    font-size: 20px;
+  }
+
+  .profile-cover-section {
+    height: 150px;
+  }
+
+  .friends-grid-new {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  }
+
+  .friend-card-new img {
+    width: 60px;
+    height: 60px;
+  }
 }

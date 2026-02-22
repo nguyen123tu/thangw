@@ -9,5 +9,7 @@ namespace MTU.Models.DTOs
         public DateTime? DateOfBirth { get; set; }
         public string? PlaceOfBirth { get; set; }
         public string? Gender { get; set; }
+        public string? Course { get; set; }
+        public int TotalCredits { get; set; }
     }
 }

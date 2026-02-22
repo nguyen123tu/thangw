@@ -9,6 +9,7 @@
     var authorName = Model.User != null ? $"{Model.User.FirstName} {Model.User.LastName}".Trim() : "User";
     var authorAvatar = Model.User?.Avatar ?? "/assets/user.png";
     var isOwnStory = ViewBag.IsOwnStory as bool? ?? false;
+    var actualViewCount = ViewBag.ActualViewCount as int? ?? 0;
 }
 
 <!DOCTYPE html>
@@ -294,28 +295,25 @@
             border-radius: 50%;
             background: rgba(255,255,255,0.15);
             border: 1px solid rgba(255,255,255,0.3);
-            font-size: 20px;
+            font-size: 22px;
             color: #fff;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
             transition: all 0.2s ease;
+            line-height: 1;
+            padding: 0;
         }
 
         .reaction-btn:hover {
-            background: rgba(255,255,255,0.25);
-            transform: scale(1.15);
-        }
-
-        .reaction-btn.reacted {
-            background: rgba(255,255,255,0.4);
+            background: rgba(255,255,255,0.28);
             transform: scale(1.2);
         }
 
-        .reaction-btn i {
-            font-size: 18px;
-            color: #fff;
+        .reaction-btn.reacted {
+            background: rgba(255,255,255,0.45);
+            transform: scale(1.35);
         }
 
         .story-reply-row {
@@ -427,6 +425,20 @@
         .story-container.paused .progress-bar.active .progress-fill {
             animation-play-state: paused;
         }
+
+        /* Emoji float animation */
+        @@keyframes emojiFloat {
+            0%   { transform: translateY(0) scale(1);    opacity: 1; }
+            60%  { transform: translateY(-120px) scale(1.3); opacity: 0.9; }
+            100% { transform: translateY(-220px) scale(0.8); opacity: 0; }
+        }
+
+        /* Viewer emoji badge */
+        .viewer-emoji {
+            font-size: 20px;
+            flex-shrink: 0;
+            margin-left: auto;
+        }
     </style>
 </head>
 <body>
@@ -495,7 +507,7 @@
             {
                 <div class="view-count">
                     <i class="fa-solid fa-eye"></i>
-                    <span>@Model.ViewCount</span>
+                    <span>@actualViewCount</span>
                 </div>
             }
 
@@ -535,18 +547,12 @@
             {
                 <div class="story-footer">
                     <div class="story-reactions">
-                        <button class="reaction-btn" data-reaction="heart" title="Thả tim">
-                            <i class="fa-solid fa-heart"></i>
-                        </button>
-                        <button class="reaction-btn" data-reaction="fire" title="Tuyệt vời">
-                            <i class="fa-solid fa-fire"></i>
-                        </button>
-                        <button class="reaction-btn" data-reaction="laugh" title="Haha">
-                            <i class="fa-solid fa-face-laugh-squint"></i>
-                        </button>
-                        <button class="reaction-btn" data-reaction="wow" title="Wow">
-                            <i class="fa-solid fa-face-surprise"></i>
-                        </button>
+                        <button class="reaction-btn" data-reaction="heart" title="Thả tim">❤️</button>
+                        <button class="reaction-btn" data-reaction="fire"  title="Tuyệt vời">🔥</button>
+                        <button class="reaction-btn" data-reaction="laugh" title="Haha">😂</button>
+                        <button class="reaction-btn" data-reaction="wow"   title="Wow">😮</button>
+                        <button class="reaction-btn" data-reaction="sad"   title="Buồn">😢</button>
+                        <button class="reaction-btn" data-reaction="clap"  title="Vỗ tay">👏</button>
                     </div>
                     <div class="story-reply-row">
                         <input type="text" class="story-reply-input" id="replyInput" placeholder="Gửi tin nhắn...">
@@ -562,7 +568,7 @@
                 <div class="story-viewers">
                     <div class="viewers-info">
                         <i class="fa-solid fa-eye"></i>
-                        <span>@Model.ViewCount người đã xem</span>
+                        <span>@actualViewCount người đã xem</span>
                     </div>
                     <button class="delete-story-btn" onclick="deleteStory(@Model.StoryId)">
                         <i class="fa-solid fa-trash"></i>
@@ -570,6 +576,131 @@
                     </button>
                 </div>
             }
+        </div>
+            <!-- Viewers Modal -->
+            <div id="viewersModal" class="viewers-modal">
+                <div class="viewers-content">
+                    <div class="viewers-header">
+                        <h3>Người đã xem (<span id="viewersCount">0</span>)</h3>
+                        <button class="close-viewers-btn" id="closeViewersBtn">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                    <div class="viewers-list" id="viewersList">
+                        <!-- Viewers will be loaded here -->
+                        <div class="loading-spinner">
+                            <i class="fa-solid fa-spinner fa-spin"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <style>
+                /* Viewers Modal Styles */
+                .viewers-modal {
+                    position: absolute;
+                    bottom: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0,0,0,0.5);
+                    z-index: 100;
+                    display: none;
+                    justify-content: center;
+                    align-items: flex-end;
+                }
+
+                .viewers-modal.active {
+                    display: flex;
+                }
+
+                .viewers-content {
+                    width: 100%;
+                    max-width: 420px; /* Match story container width */
+                    height: 70%;
+                    background: #222;
+                    border-radius: 20px 20px 0 0;
+                    overflow: hidden;
+                    display: flex;
+                    flex-direction: column;
+                    box-shadow: 0 -4px 20px rgba(0,0,0,0.5);
+                    animation: slideUp 0.3s ease-out;
+                }
+
+                @@keyframes slideUp {
+                    from { transform: translateY(100%); }
+                    to { transform: translateY(0); }
+                }
+
+                .viewers-header {
+                    padding: 16px;
+                    border-bottom: 1px solid #333;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                }
+
+                .viewers-header h3 {
+                    margin: 0;
+                    font-size: 16px;
+                    font-weight: 600;
+                }
+
+                .close-viewers-btn {
+                    background: none;
+                    border: none;
+                    color: #fff;
+                    font-size: 20px;
+                    cursor: pointer;
+                    padding: 4px;
+                }
+
+                .viewers-list {
+                    flex: 1;
+                    overflow-y: auto;
+                    padding: 0;
+                }
+
+                .viewer-item {
+                    display: flex;
+                    align-items: center;
+                    padding: 12px 16px;
+                    gap: 12px;
+                    border-bottom: 1px solid #333;
+                }
+
+                .viewer-item:hover {
+                    background: #2a2a2a;
+                }
+
+                .viewer-avatar {
+                    width: 40px;
+                    height: 40px;
+                    border-radius: 50%;
+                    object-fit: cover;
+                }
+
+                .viewer-info {
+                    flex: 1;
+                }
+
+                .viewer-name {
+                    font-weight: 500;
+                    font-size: 14px;
+                    display: block;
+                }
+
+                .viewed-time {
+                    font-size: 12px;
+                    color: #aaa;
+                }
+
+                .loading-spinner, .empty-viewers {
+                    padding: 30px;
+                    text-align: center;
+                    color: #aaa;
+                }
+            </style>
         </div>
     </div>
 
@@ -583,6 +714,13 @@
         const pauseBtn = document.getElementById('pauseBtn');
         const replyInput = document.getElementById('replyInput');
         const sendReplyBtn = document.getElementById('sendReplyBtn');
+        // Viewers modal elements
+        const viewersModal = document.getElementById('viewersModal');
+        const viewersList = document.getElementById('viewersList');
+        const closeViewersBtn = document.getElementById('closeViewersBtn');
+        const viewersCountSpan = document.getElementById('viewersCount');
+        const viewersInfoBtn = document.querySelector('.viewers-info');
+
         let isPaused = false;
         let isMuted = false;
         const storyUserId = @Model.UserId;
@@ -602,12 +740,16 @@
                 });
 
                 video.addEventListener('ended', function() {
-                    window.location.href = nextUrl;
+                    if (!isPaused) {
+                        window.location.href = nextUrl;
+                    }
                 });
             } else {
                 // For images, use 15 second timer
                 setTimeout(function() {
-                    window.location.href = nextUrl;
+                    if (!isPaused) {
+                        window.location.href = nextUrl;
+                    }
                 }, 15000);
             }
         }
@@ -627,45 +769,65 @@
         // Pause toggle
         if (pauseBtn) {
             pauseBtn.addEventListener('click', function() {
-                isPaused = !isPaused;
-                container.classList.toggle('paused', isPaused);
-                pauseBtn.innerHTML = isPaused 
-                    ? '<i class="fa-solid fa-play"></i>' 
-                    : '<i class="fa-solid fa-pause"></i>';
-                
-                if (video) {
-                    if (isPaused) {
-                        video.pause();
-                    } else {
-                        video.play();
-                    }
-                }
+                togglePause();
             });
         }
 
-        // Hold to pause
+        function togglePause(forceState = null) {
+            if (forceState !== null) {
+                isPaused = forceState;
+            } else {
+                isPaused = !isPaused;
+            }
+
+            container.classList.toggle('paused', isPaused);
+            
+            if (pauseBtn) {
+                pauseBtn.innerHTML = isPaused 
+                    ? '<i class="fa-solid fa-play"></i>' 
+                    : '<i class="fa-solid fa-pause"></i>';
+            }
+            
+            if (video) {
+                if (isPaused) {
+                    video.pause();
+                } else {
+                    video.play();
+                }
+            }
+            
+            // Pause animation
+            const activeFill = document.querySelector('.progress-bar.active .progress-fill');
+            if (activeFill) {
+                activeFill.style.animationPlayState = isPaused ? 'paused' : 'running';
+            }
+        }
+
+        // Hold to pause logic
         let holdTimer;
         container.addEventListener('mousedown', function(e) {
-            if (e.target.closest('.story-action-btn') || e.target.closest('.story-footer') || e.target.closest('.story-viewers')) return;
+            if (e.target.closest('.story-action-btn') || 
+                e.target.closest('.story-footer') || 
+                e.target.closest('.story-viewers') ||
+                e.target.closest('.viewers-modal')) return;
             
             holdTimer = setTimeout(function() {
-                isPaused = true;
-                container.classList.add('paused');
-                if (video) video.pause();
+                togglePause(true);
             }, 200);
         });
 
-        container.addEventListener('mouseup', function() {
+        container.addEventListener('mouseup', function(e) {
             clearTimeout(holdTimer);
-            if (isPaused && !pauseBtn.innerHTML.includes('play')) {
-                isPaused = false;
-                container.classList.remove('paused');
-                if (video) video.play();
+            // Only resume if it was paused by holding (and not manually paused)
+            if (isPaused && !pauseBtn.innerHTML.includes('play') && !viewersModal.classList.contains('active')) {
+                togglePause(false);
             }
         });
 
         // Keyboard navigation
         document.addEventListener('keydown', function(e) {
+            if (viewersModal && viewersModal.classList.contains('active')) return;
+
             if (e.key === 'ArrowLeft') {
                 const prevLink = document.querySelector('.story-nav.prev');
                 if (prevLink) prevLink.click();
@@ -679,22 +841,59 @@
             }
         });
 
-        // Reaction buttons
+        // Reaction buttons - gọi API và hiệu ứng emoji bay
+        const EMOJI_MAP = {
+            heart: '❤️', fire: '🔥', laugh: '😂',
+            wow:   '😮', sad:  '😢', clap:  '👏'
+        };
+
         document.querySelectorAll('.reaction-btn').forEach(function(btn) {
-            btn.addEventListener('click', function() {
+            btn.addEventListener('click', async function() {
                 const reaction = this.dataset.reaction;
-                this.classList.add('reacted');
-                
-                // Send reaction as message
-                sendStoryReply(reaction === 'heart' ? '😯' : 
-                              reaction === 'fire' ? '🙄' : 
-                              reaction === 'laugh' ? '😃' : '😮');
-                
-                setTimeout(() => {
-                    this.classList.remove('reacted');
-                }, 500);
+                const emoji    = EMOJI_MAP[reaction] || '❤️';
+
+                // Visual feedback ngay lập tức
+                btn.classList.add('reacted');
+                spawnFloatingEmoji(emoji);
+                setTimeout(() => btn.classList.remove('reacted'), 600);
+
+                // Gọi API lưu reaction
+                try {
+                    const token = document.querySelector('meta[name="request-token"]')?.content
+                               || document.cookie.match(/XSRF-TOKEN=([^;]+)/)?.[1] || '';
+                    const res  = await fetch('/Story/React', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'RequestVerificationToken': token
+                        },
+                        body: JSON.stringify({ storyId: storyId, reactionType: reaction })
+                    });
+                    const data = await res.json();
+                    if (!data.success) console.warn('React error:', data.message);
+                } catch (err) {
+                    console.error('React failed:', err);
+                }
             });
         });
+
+        // Emit emoji bay từ vị trí nút lên
+        function spawnFloatingEmoji(emoji) {
+            const el = document.createElement('div');
+            el.textContent = emoji;
+            el.style.cssText = [
+                'position:fixed',
+                'left:' + (30 + Math.random() * 40) + '%',
+                'bottom:140px',
+                'font-size:' + (28 + Math.random() * 16) + 'px',
+                'pointer-events:none',
+                'z-index:9999',
+                'animation:emojiFloat 1.4s ease-out forwards',
+                'opacity:1'
+            ].join(';');
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 1500);
+        }
 
         // Send reply
         if (sendReplyBtn && replyInput) {
@@ -738,6 +937,75 @@
                 }
             } catch (error) {
                 console.error('Error sending reply:', error);
+            }
+        }
+
+        // --- Viewers Modal Logic ---
+        if (viewersInfoBtn) {
+            viewersInfoBtn.addEventListener('click', function() {
+                togglePause(true); // Pause story when opening modal
+                viewersModal.classList.add('active');
+                loadViewers();
+            });
+        }
+
+        if (closeViewersBtn) {
+            closeViewersBtn.addEventListener('click', function() {
+                viewersModal.classList.remove('active');
+                togglePause(false); // Resume story
+            });
+        }
+        
+        // Close modal when clicking outside content
+        if (viewersModal) {
+            viewersModal.addEventListener('click', function(e) {
+                if (e.target === viewersModal) {
+                    viewersModal.classList.remove('active');
+                    togglePause(false);
+                }
+            });
+        }
+
+        async function loadViewers() {
+            if (!viewersList) return;
+            
+            viewersList.innerHTML = '<div class="loading-spinner"><i class="fa-solid fa-spinner fa-spin"></i></div>';
+            
+            try {
+                const response = await fetch(`/Story/GetStoryViewers?storyId=${storyId}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    viewersCountSpan.textContent = data.viewers.length;
+                    
+                    if (data.viewers.length === 0) {
+                        viewersList.innerHTML = '<div class="empty-viewers">Chưa có ai xem tin này</div>';
+                        return;
+                    }
+                    
+                    let html = '';
+                    data.viewers.forEach(viewer => {
+                        const emojiTag = viewer.emoji
+                            ? `<span class="viewer-emoji" title="Đã react">${viewer.emoji}</span>`
+                            : '';
+                        html += `
+                            <div class="viewer-item">
+                                <img src="${viewer.avatar}" alt="${viewer.fullName}" class="viewer-avatar">
+                                <div class="viewer-info">
+                                    <span class="viewer-name">${viewer.fullName}</span>
+                                    <span class="viewed-time">${viewer.viewedAt}</span>
+                                </div>
+                                ${emojiTag}
+                            </div>
+                        `;
+                    });
+                    viewersList.innerHTML = html;
+                } else {
+                    viewersList.innerHTML = `<div class="empty-viewers">${data.message || 'Không thể tải danh sách'}</div>`;
+                }
+            } catch (error) {
+                console.error('Error loading viewers:', error);
+                viewersList.innerHTML = '<div class="empty-viewers">Đã xảy ra lỗi</div>';
             }
         }
     })();

@@ -5,9 +5,12 @@
 @model List<MTU.Models.DTOs.PostDto>
 
 <div class="feed-wrapper">
-    <div class="mb-4">
-        <h2 class="mb-3">Bài viết đã lưu</h2>
-        <a href="/" class="text-decoration-none text-muted" style="display: flex; align-items: center; gap: 8px;">
+    <div class="mb-4 d-flex align-items-center justify-content-between">
+        <h2 style="font-weight: 800; color: var(--text-primary); margin: 0;">
+            <i class="fa-solid fa-bookmark" style="color: var(--lofi-sage); margin-right: 10px;"></i>
+            Đã lưu
+        </h2>
+        <a href="/" class="btn-back">
             <i class="fa-solid fa-arrow-left"></i> Quay lại
         </a>
     </div>
@@ -21,15 +24,20 @@
     }
     else
     {
-        <div class="card p-5 text-center shadow-sm">
-            <div class="mb-3">
-                <i class="fa-regular fa-bookmark fa-3x text-muted"></i>
+        <div class="empty-state-card">
+            <div class="empty-icon">
+                <i class="fa-regular fa-bookmark"></i>
             </div>
-            <h5 class="text-muted">Bạn chưa lưu bài viết nào.</h5>
-            <p class="text-muted mb-4">Lưu các bài viết yêu thích để xem lại sau.</p>
-            <a href="/" class="btn btn-primary" style="width: fit-content; margin: 0 auto;">
+            <h5>Chưa có lưu bài nào cả!</h5>
+            <p>Lưu những khoảnh khắc thú vị để xem lại sau nhé.</p>
+            <a href="/" class="btn-explore">
                 Khám phá ngay
             </a>
         </div>
     }
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/saved.css" asp-append-version="true" />
+}
 </div>

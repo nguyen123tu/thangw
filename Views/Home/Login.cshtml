@@ -1,65 +1,166 @@
 @model MTU.Models.DTOs.LoginDto
 @{
     ViewData["Title"] = "Đăng nhập";
-    Layout = null; // Use standalone layout for Auth
+    Layout = null;
 }
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Đăng nhập - MTU Social</title>
+    <title>Đăng nhập – MTU Social</title>
+    <meta name="description" content="Đăng nhập vào MTU Social – Mạng xã hội dành cho sinh viên Trường Đại học Tiền Giang." />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-    <link rel="stylesheet" href="~/css/variables.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/auth.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/login.css" asp-append-version="true" />
 </head>
 <body>
-    <div class="auth-container">
-        <div class="auth-card">
-            <h1 class="auth-title"></h1>
-            
-            @if (TempData["SuccessMessage"] != null)
+<div class="login-page">
+
+    <!-- ── LEFT: Branding ── -->
+    <div class="login-left">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+
+        <div class="left-content">
+            <div class="brand-logo">
+                <svg viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="10" cy="21" r="4" fill="white" opacity="0.9"/>
+                    <circle cx="32" cy="10" r="4" fill="white" opacity="0.9"/>
+                    <circle cx="32" cy="32" r="4" fill="white" opacity="0.9"/>
+                    <line x1="14" y1="21" x2="28" y2="11" stroke="white" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
+                    <line x1="14" y1="21" x2="28" y2="31" stroke="white" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
+                    <line x1="32" y1="14" x2="32" y2="28" stroke="white" stroke-width="2" stroke-linecap="round" opacity="0.4"/>
+                </svg>
+            </div>
+
+            <h1 class="brand-name">MTU <em>Social</em></h1>
+            <p class="brand-tagline">
+                Mạng xã hội dành cho sinh viên<br />
+                Trường Đại học Tiền Giang 🌱
+            </p>
+
+            <div class="features">
+                <div class="feature-item">
+                    <div class="feat-icon"><i class="fa-solid fa-users"></i></div>
+                    <div class="feat-text">
+                        Kết nối bạn bè
+                        <small>Tìm và kết bạn với sinh viên MTU</small>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feat-icon"><i class="fa-solid fa-pen-to-square"></i></div>
+                    <div class="feat-text">
+                        Chia sẻ nội dung
+                        <small>Đăng bài, ảnh, video lên feed cá nhân</small>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feat-icon"><i class="fa-solid fa-message"></i></div>
+                    <div class="feat-text">
+                        Nhắn tin trực tiếp
+                        <small>Chat riêng nhanh chóng với bạn bè</small>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feat-icon"><i class="fa-solid fa-robot"></i></div>
+                    <div class="feat-text">
+                        Trợ lý AI tích hợp
+                        <small>Hỗ trợ học tập thông minh</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="left-footer">© 2026 MTU Social · Đại học Tiền Giang</div>
+    </div>
+
+    <!-- ── RIGHT: Form ── -->
+    <div class="login-right">
+        <div class="form-wrap">
+            <div class="form-eyebrow">Chào mừng trở lại</div>
+            <h2 class="form-title">Đăng nhập<br/>vào <em>tài khoản</em></h2>
+            <p class="form-sub">Nhập thông tin để tiếp tục trải nghiệm</p>
+
+            @if (TempData["AuthSuccess"] != null)
             {
-                <div class="alert alert-success">
-                    @TempData["SuccessMessage"]
+                <div class="f-alert success">
+                    <i class="fa-solid fa-circle-check"></i>
+                    <span>@TempData["AuthSuccess"]</span>
                 </div>
             }
-            
-            <form asp-action="Login" method="post" class="auth-form">
-                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                
-                <div class="auth-field">
-                    <label asp-for="UsernameOrEmail">Email</label>
-                    <input asp-for="UsernameOrEmail" class="auth-input" placeholder="ten@mtu.edu.vn" required>
-                    <span asp-validation-for="UsernameOrEmail" class="text-danger"></span>
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="f-alert error">
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                    <span>@TempData["ErrorMessage"]</span>
                 </div>
-                <div class="auth-field">
-                    <label asp-for="Password">Mật khẩu</label>
-                    <div class="password-wrapper">
-                        <input asp-for="Password" type="password" class="auth-input" placeholder="••••••••" required id="passwordInput">
-                        <button type="button" class="toggle-password" onclick="togglePassword()">
-                            <i class="fa-regular fa-eye" id="toggleIcon"></i>
-                        </button>
+            }
+
+            <form asp-action="Login" method="post" id="loginForm" novalidate>
+                @Html.AntiForgeryToken()
+                <div asp-validation-summary="ModelOnly" class="val-summary"></div>
+
+                <div class="fields">
+                    <div class="field">
+                        <label class="f-label" for="UsernameOrEmail">
+                            <i class="fa-regular fa-envelope"></i> Email hoặc Tên đăng nhập
+                        </label>
+                        <div class="input-wrap">
+                            <input asp-for="UsernameOrEmail" id="UsernameOrEmail"
+                                   class="f-input" placeholder="ten.hocsinh@mtu.edu.vn"
+                                   autocomplete="username" required />
+                            <i class="fa-regular fa-envelope input-ico"></i>
+                        </div>
+                        <span asp-validation-for="UsernameOrEmail" class="f-err"></span>
                     </div>
-                    <span asp-validation-for="Password" class="text-danger"></span>
+
+                    <div class="field">
+                        <label class="f-label" for="passwordInput">
+                            <i class="fa-solid fa-lock"></i> Mật khẩu
+                        </label>
+                        <div class="input-wrap">
+                            <input asp-for="Password" type="password" id="passwordInput"
+                                   class="f-input" placeholder="••••••••"
+                                   autocomplete="current-password" required />
+                            <i class="fa-solid fa-lock input-ico"></i>
+                            <button type="button" class="toggle-pwd" id="toggleBtn" title="Hiện/ẩn mật khẩu">
+                                <i class="fa-regular fa-eye" id="toggleIcon"></i>
+                            </button>
+                        </div>
+                        <span asp-validation-for="Password" class="f-err"></span>
+                    </div>
                 </div>
-                
-                <button type="submit" class="auth-btn">Đăng nhập</button>
-                
-                <div class="auth-forgot">
-                    <a href="#">Quên mật khẩu?</a>
+
+                <div class="options-row">
+                    <label class="check-label">
+                        <input type="checkbox" id="rememberMe" name="RememberMe" />
+                        <div class="custom-box" id="customBox"></div>
+                        Ghi nhớ đăng nhập
+                    </label>
+                    <a href="#" class="forgot-link">Quên mật khẩu?</a>
                 </div>
-                
-                <div class="auth-divider"></div>
-                
-                <p class="auth-link">Chưa có tài khoản? <a asp-action="Register">Đăng ký ngay</a></p>
+
+                <button type="submit" class="btn-login" id="submitBtn">
+                    <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                    <span>Đăng nhập</span>
+                    <i class="fa-solid fa-arrow-right ico-arrow"></i>
+                </button>
+
+                <div class="divider">HOẶC</div>
+
+                <p class="reg-link">
+                    Chưa có tài khoản? <a asp-action="Register">Tạo tài khoản mới</a>
+                </p>
             </form>
         </div>
     </div>
-    <script src="~/js/loginTogglePassword.js" asp-append-version="true"></script>
+</div>
+
+<script src="~/js/login.js" asp-append-version="true"></script>
 </body>
 </html>

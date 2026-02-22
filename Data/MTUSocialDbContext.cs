@@ -23,6 +23,8 @@ namespace MTU.Data
         public DbSet<Event> Events { get; set; }
         public DbSet<Story> Stories { get; set; }
         public DbSet<SavedPost> SavedPosts { get; set; }
+        public DbSet<StoryView> StoryViews { get; set; }
+        public DbSet<StoryReaction> StoryReactions { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -158,6 +160,42 @@ namespace MTU.Data
                 entity.HasOne(s => s.User)
                     .WithMany(u => u.SavedPosts)
                     .HasForeignKey(s => s.UserId)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            modelBuilder.Entity<StoryView>(entity =>
+            {
+                entity.HasKey(e => e.StoryViewId);
+                
+                // Composite key or unique index to prevent duplicate views
+                entity.HasIndex(e => new { e.StoryId, e.ViewerId }).IsUnique();
+                
+                entity.HasOne(sv => sv.Story)
+                    .WithMany()
+                    .HasForeignKey(sv => sv.StoryId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                
+                entity.HasOne(sv => sv.Viewer)
+                    .WithMany()
+                    .HasForeignKey(sv => sv.ViewerId)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            modelBuilder.Entity<StoryReaction>(entity =>
+            {
+                entity.HasKey(e => e.StoryReactionId);
+
+                // Mỗi user chỉ có một reaction per story (upsert)
+                entity.HasIndex(e => new { e.StoryId, e.UserId }).IsUnique();
+
+                entity.HasOne(r => r.Story)
+                    .WithMany()
+                    .HasForeignKey(r => r.StoryId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(r => r.User)
+                    .WithMany()
+                    .HasForeignKey(r => r.UserId)
                     .OnDelete(DeleteBehavior.NoAction);
             });
         }

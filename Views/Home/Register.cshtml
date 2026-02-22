@@ -8,41 +8,150 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Đăng ký</title>
+    <title>Tạo tài khoản – MTU Social</title>
+    <meta name="description" content="Tạo tài khoản MTU Social – Tham gia mạng xã hội sinh viên Đại học Tiền Giang." />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="~/css/variables.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/auth.css" asp-append-version="true" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="stylesheet" href="~/css/register.css" asp-append-version="true" />
 </head>
 <body>
-    <div class="auth-container">
-        <div class="auth-card">
-            <h1 class="auth-title">Đăng ký</h1>
-            <p class="auth-subtitle">Sử dụng email trường @@mtu.edu.vn để đăng ký</p>
-            
-            @if (TempData["SuccessMessage"] != null)
+<div class="reg-page">
+
+    <!-- ── LEFT: Form ── -->
+    <div class="reg-left">
+        <div class="form-wrap">
+
+            <a href="/Home/Login" class="back-link">
+                <i class="fa-solid fa-arrow-left"></i>
+                Quay lại đăng nhập
+            </a>
+
+            <div class="form-eyebrow">Gia nhập cộng đồng</div>
+            <h1 class="form-title">Tạo <em>tài khoản</em><br/>miễn phí</h1>
+            <p class="form-sub">
+                Dùng email trường để đăng ký.<br/>
+                Mật khẩu sẽ được gửi tự động vào hộp thư của bạn.
+            </p>
+
+            <div class="domain-badge">
+                <i class="fa-solid fa-shield-check"></i>
+                Chỉ chấp nhận email @@mtu.edu.vn
+            </div>
+
+            @if (TempData["AuthSuccess"] != null)
             {
-                <div class="alert alert-success">
-                    @TempData["SuccessMessage"]
+                <div class="f-alert success">
+                    <i class="fa-solid fa-circle-check"></i>
+                    <span>@TempData["AuthSuccess"]</span>
                 </div>
             }
-            
-            <form asp-action="Register" method="post" class="auth-form">
-                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                
-                <div class="auth-field">
-                    <label asp-for="Email">Email</label>
-                    <input asp-for="Email" type="email" class="auth-input" placeholder="ten.cua.ban@mtu.edu.vn" required>
-                    <span asp-validation-for="Email" class="text-danger"></span>
-                    <small class="auth-hint">Mật khẩu sẽ được gửi đến email này</small>
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="f-alert error">
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                    <span>@TempData["ErrorMessage"]</span>
+                </div>
+            }
+
+            <form asp-action="Register" method="post" id="regForm" novalidate>
+                @Html.AntiForgeryToken()
+                <div asp-validation-summary="ModelOnly" class="val-summary"></div>
+
+                <div class="field">
+                    <label class="f-label" for="Email">
+                        <i class="fa-regular fa-envelope"></i>
+                        Email trường
+                    </label>
+                    <div class="input-wrap">
+                        <input asp-for="Email"
+                               id="Email"
+                               type="email"
+                               class="f-input"
+                               placeholder="hoten.mssv@mtu.edu.vn"
+                               autocomplete="email"
+                               required />
+                        <i class="fa-regular fa-envelope input-ico"></i>
+                    </div>
+                    <span asp-validation-for="Email" class="f-err"></span>
+                    <div class="f-hint">
+                        <i class="fa-solid fa-circle-info"></i>
+                        Ví dụ: nguyenvana.12345@mtu.edu.vn
+                    </div>
                 </div>
 
-                <button type="submit" class="auth-btn">Đăng ký</button>
-                
-                <p class="auth-link">Bạn đã có tài khoản? <a asp-action="Login">Đăng nhập</a></p>
+                <div class="terms-note">
+                    <i class="fa-solid fa-lock" style="color:#6a9159; margin-right:5px;"></i>
+                    Bằng cách đăng ký, bạn đồng ý với
+                    <a href="#">Điều khoản sử dụng</a> và
+                    <a href="#">Chính sách bảo mật</a> của MTU Social.
+                </div>
+
+                <button type="submit" class="btn-register" id="submitBtn">
+                    <i class="fa-solid fa-paper-plane"></i>
+                    <span>Gửi yêu cầu đăng ký</span>
+                    <i class="fa-solid fa-arrow-right ico-arrow"></i>
+                </button>
             </form>
+
+            <p class="login-link">
+                Đã có tài khoản? <a asp-action="Login">Đăng nhập ngay</a>
+            </p>
         </div>
     </div>
+
+    <!-- ── RIGHT: Visual ── -->
+    <div class="reg-right">
+        <div class="ring ring-1"></div>
+        <div class="ring ring-2"></div>
+        <div class="ring ring-3"></div>
+        <div class="ring ring-4"></div>
+        <div id="particles"></div>
+
+        <div class="right-content">
+            <div class="steps-card">
+                <div class="steps-title">⚡ Chỉ 3 bước đơn giản</div>
+
+                <div class="step-item">
+                    <div class="step-num">1</div>
+                    <div class="step-body">
+                        <strong>Nhập email trường</strong>
+                        <span>Dùng địa chỉ email @@mtu.edu.vn của bạn</span>
+                    </div>
+                </div>
+                <div class="step-connector"></div>
+
+                <div class="step-item">
+                    <div class="step-num">2</div>
+                    <div class="step-body">
+                        <strong>Nhận mật khẩu qua email</strong>
+                        <span>Hệ thống tự động gửi mật khẩu tạm vào hộp thư</span>
+                    </div>
+                </div>
+                <div class="step-connector"></div>
+
+                <div class="step-item">
+                    <div class="step-num">3</div>
+                    <div class="step-body">
+                        <strong>Đăng nhập &amp; khám phá</strong>
+                        <span>Hoàn thiện hồ sơ và bắt đầu kết nối bạn bè</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="right-brand">MTU <em>Social</em></div>
+            <p class="right-tagline">
+                Hơn 1.000 sinh viên đang kết nối<br/>mỗi ngày trên nền tảng này 🎓
+            </p>
+        </div>
+
+        <div class="right-footer">© 2026 MTU Social · Đại học Tiền Giang</div>
+    </div>
+
+</div>
+
+<script src="~/js/register.js" asp-append-version="true"></script>
 </body>
 </html>

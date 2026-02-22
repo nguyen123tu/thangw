@@ -9,7 +9,7 @@
    NOTE: Chat functionality has been moved to chatManager.js
    ============================================ */
 
-(function() {
+(function () {
     'use strict';
 
     /**
@@ -17,13 +17,13 @@
      */
     function init() {
         console.log('MTU Social Network initialized');
-        
+
         // Initialize image preview handlers
         initImagePreviewHandlers();
-        
+
         // Initialize post menu handlers
         initPostMenuHandlers();
-        
+
         // Add any general site initialization here
     }
 
@@ -34,7 +34,7 @@
         // Avatar file input handler
         const avatarFileInput = document.getElementById('avatarFileInput');
         if (avatarFileInput) {
-            avatarFileInput.addEventListener('change', function(e) {
+            avatarFileInput.addEventListener('change', function (e) {
                 handleImagePreview(e.target, 'avatarPreviewModal', 'avatarError');
             });
         }
@@ -42,7 +42,7 @@
         // Cover file input handler
         const coverFileInput = document.getElementById('coverFileInput');
         if (coverFileInput) {
-            coverFileInput.addEventListener('change', function(e) {
+            coverFileInput.addEventListener('change', function (e) {
                 handleImagePreview(e.target, 'coverPreviewModal', 'coverError');
             });
         }
@@ -52,7 +52,7 @@
      * Initialize post menu handlers - close menu when clicking outside
      */
     function initPostMenuHandlers() {
-        document.addEventListener('click', function(e) {
+        document.addEventListener('click', function (e) {
             // Close all open menus if clicking outside
             if (!e.target.closest('.post-more') && !e.target.closest('.post-menu-dropdown')) {
                 document.querySelectorAll('.post-menu-dropdown.show').forEach(menu => {
@@ -101,7 +101,7 @@
 
         // Show preview
         const reader = new FileReader();
-        reader.onload = function(e) {
+        reader.onload = function (e) {
             if (previewImg) {
                 previewImg.src = e.target.result;
             }
@@ -138,14 +138,14 @@
  */
 function togglePostMenu(btn) {
     const dropdown = btn.nextElementSibling;
-    
+
     // Close all other open menus
     document.querySelectorAll('.post-menu-dropdown.show').forEach(menu => {
         if (menu !== dropdown) {
             menu.classList.remove('show');
         }
     });
-    
+
     // Toggle current menu
     dropdown.classList.toggle('show');
 }
@@ -155,10 +155,16 @@ function togglePostMenu(btn) {
  * @param {number} postId - The post ID to delete
  */
 async function deletePost(postId) {
-    if (!confirm('Bạn có chắc chắn muốn xóa bài viết này?')) {
-        return;
-    }
-    
+    const confirmed = await MTUDialog.confirm({
+        title: 'Xóa bài viết',
+        message: 'Bài viết sẽ bị xóa vĩnh viễn. Bạn có chắc chắn không?',
+        type: 'delete',
+        confirmText: 'Xóa',
+        cancelText: 'Hủy',
+        danger: true
+    });
+    if (!confirmed) return;
+
     try {
         const response = await fetch(`/Post/Delete/${postId}`, {
             method: 'POST',
@@ -167,9 +173,9 @@ async function deletePost(postId) {
                 'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
             }
         });
-        
+
         const result = await response.json();
-        
+
         if (result.success) {
             // Remove post from DOM with animation
             const postCard = document.querySelector(`[data-post-id="${postId}"]`);
@@ -181,17 +187,13 @@ async function deletePost(postId) {
                     postCard.remove();
                 }, 300);
             }
-            
-            // Play success sound if available
-            if (window.SoundEffects) {
-                window.SoundEffects.play('success');
-            }
+            MTUDialog.success(result.message || 'Đã xóa bài viết thành công');
         } else {
-            alert(result.message || 'Không thể xóa bài viết');
+            MTUDialog.error(result.message || 'Không thể xóa bài viết');
         }
     } catch (error) {
         console.error('Error deleting post:', error);
-        alert('Đã xảy ra lỗi khi xóa bài viết');
+        MTUDialog.error('Đã xảy ra lỗi khi xóa bài viết');
     }
 }
 
@@ -200,7 +202,7 @@ async function deletePost(postId) {
  * @param {number} postId - The post ID to edit
  */
 function editPost(postId) {
-    alert('Tính năng chỉnh sửa bài viết đang được phát triển');
+    MTUDialog.info('Tính năng chỉnh sửa bài viết đang được phát triển');
 }
 
 
@@ -218,20 +220,20 @@ async function toggleSavePost(postId, btn) {
             },
             body: 'postId=' + postId
         });
-        
+
         const result = await response.json();
-        
+
         if (result.success) {
             const icon = btn.querySelector('i');
             const textSpan = btn.querySelector('span');
-            
+
             if (result.isSaved) {
                 // Trạng thái: Đã lưu -> Hiện icon Solid (Đậm)
                 if (icon) icon.className = 'fa-solid fa-bookmark';
                 if (textSpan) textSpan.textContent = 'Bỏ lưu bài viết';
             } else {
                 // Trạng thái: Chưa lưu -> Hiện icon Regular (Rỗng)
-                if (icon) icon.className = 'fa-regular fa-bookmark'; 
+                if (icon) icon.className = 'fa-regular fa-bookmark';
                 if (textSpan) textSpan.textContent = 'Lưu bài viết';
 
                 // SPECIAL LOGIC: Nếu đang ở trang "Đã lưu", xóa bài viết khỏi danh sách
@@ -242,14 +244,14 @@ async function toggleSavePost(postId, btn) {
                         postCard.style.transition = 'all 0.3s ease';
                         postCard.style.opacity = '0';
                         postCard.style.transform = 'scale(0.95)';
-                        
+
                         setTimeout(() => {
                             postCard.remove();
-                            
+
                             // Check if list empty
                             const feedWrapper = document.querySelector('.feed-wrapper');
                             const remainingPosts = feedWrapper ? feedWrapper.querySelectorAll('.post-card') : [];
-                            
+
                             if (remainingPosts.length === 0) {
                                 // Reload to show empty state designed in View
                                 window.location.reload();
@@ -258,17 +260,17 @@ async function toggleSavePost(postId, btn) {
                     }
                 }
             }
-            
+
             // Close the menu
             const menu = btn.closest('.post-menu-dropdown');
             if (menu) menu.classList.remove('show');
-            
+
         } else {
-            alert(result.message || 'Không thể thực hiện hành động này');
+            MTUDialog.warning(result.message || 'Không thể thực hiện hành động này');
         }
     } catch (error) {
         console.error('Error toggling save post:', error);
-        alert('Đã xảy ra lỗi kết nối');
+        MTUDialog.error('Đã xảy ra lỗi kết nối');
     }
 }
 

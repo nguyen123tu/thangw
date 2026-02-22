@@ -1,80 +1,74 @@
 @model List<MTU.Models.Entities.Notification>
 @{
     ViewData["Title"] = "Thông báo";
+    Layout = "_Layout";
 }
 
-<div class="container mt-4">
-    <div class="row">
-        <div class="col-md-8 mx-auto">
-            <div class="card shadow-sm border-0">
-                <div class="card-header bg-white py-3 border-bottom">
-                    <h5 class="mb-0 fw-bold"><i class="fas fa-bell text-primary me-2"></i>Thông báo</h5>
-                </div>
-                <div class="card-body p-0">
-                    @if (Model.Any())
-                    {
-                        <div class="list-group list-group-flush">
-                            @foreach (var notification in Model)
-                            {
-                                var senderName = notification.Sender != null 
-                                    ? (!string.IsNullOrWhiteSpace($"{notification.Sender.FirstName} {notification.Sender.LastName}") 
-                                        ? $"{notification.Sender.FirstName} {notification.Sender.LastName}" 
-                                        : notification.Sender.Username)
-                                    : "Hệ thống";
-                                var avatar = notification.Sender?.Avatar ?? "/assets/user.png";
-                                var link = notification.RelatedId.HasValue ? $"/Post/Details/{notification.RelatedId}" : "#";
-
-                                <a href="@link" class="list-group-item list-group-item-action p-3 @(notification.IsRead ? "" : "bg-light")">
-                                    <div class="d-flex align-items-center">
-                                        <div class="position-relative">
-                                            <img src="@avatar" class="rounded-circle border" width="56" height="56" style="object-fit: cover;">
-                                            @if (notification.Type == "like")
-                                            {
-                                                <span class="position-absolute bottom-0 end-0 bg-primary p-1 rounded-circle d-flex align-items-center justify-content-center" style="width: 20px; height: 20px;">
-                                                    <i class="fas fa-thumbs-up text-white" style="font-size: 10px;"></i>
-                                                </span>
-                                            }
-                                            else if (notification.Type == "comment")
-                                            {
-                                                <span class="position-absolute bottom-0 end-0 bg-success p-1 rounded-circle d-flex align-items-center justify-content-center" style="width: 20px; height: 20px;">
-                                                    <i class="fas fa-comment text-white" style="font-size: 10px;"></i>
-                                                </span>
-                                            }
-                                        </div>
-                                        <div class="ms-3 flex-grow-1">
-                                            <p class="mb-1 text-dark">
-                                                <strong>@senderName</strong> @notification.Content
-                                            </p>
-                                            <small class="text-muted">
-                                                @{
-                                                    var timeSpan = DateTime.Now - notification.CreatedAt;
-                                                    if (timeSpan.TotalMinutes < 1) { <text>Vừa xong</text> }
-                                                    else if (timeSpan.TotalMinutes < 60) { <text>@((int)timeSpan.TotalMinutes) phút trước</text> }
-                                                    else if (timeSpan.TotalHours < 24) { <text>@((int)timeSpan.TotalHours) giờ trước</text> }
-                                                    else { <text>@notification.CreatedAt.ToString("dd/MM/yyyy HH:mm")</text> }
-                                                }
-                                            </small>
-                                        </div>
-                                        @if (!notification.IsRead)
-                                        {
-                                            <div class="ms-2">
-                                                <span class="badge bg-primary rounded-pill">&bull;</span>
-                                            </div>
-                                        }
-                                    </div>
-                                </a>
-                            }
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="text-center py-5">
-                            <i class="fas fa-bell-slash fa-3x text-muted mb-3"></i>
-                            <p class="text-muted">Bạn chưa có thông báo nào.</p>
-                        </div>
-                    }
-                </div>
-            </div>
-        </div>
+<div class="notification-container">
+    <div class="notification-header-card">
+        <i class="fas fa-bell notification-icon"></i>
+        <h4 class="notification-title">Thông báo</h4>
     </div>
+
+    @if (Model.Any())
+    {
+        <div class="notification-list">
+            @foreach (var notification in Model)
+            {
+                var senderName = notification.Sender != null 
+                    ? (!string.IsNullOrWhiteSpace($"{notification.Sender.FirstName} {notification.Sender.LastName}") 
+                        ? $"{notification.Sender.FirstName} {notification.Sender.LastName}" 
+                        : notification.Sender.Username)
+                    : "Hệ thống";
+                var avatar = notification.Sender?.Avatar ?? "/assets/user.png";
+                var link = notification.RelatedId.HasValue ? $"/Post/Details/{notification.RelatedId}" : "#";
+                
+                var typeIcon = "fa-bell";
+                var typeClass = "";
+                if (notification.Type == "like") { typeIcon = "fa-heart"; typeClass = "type-like"; }
+                else if (notification.Type == "comment") { typeIcon = "fa-comment"; typeClass = "type-comment"; }
+                else if (notification.Type == "friend_request") { typeIcon = "fa-user-plus"; typeClass = "type-friend"; }
+
+                <a href="@link" class="notification-card @(notification.IsRead ? "" : "unread")">
+                    <div style="position: relative;">
+                        <img src="@avatar" class="notification-sender-avatar">
+                        <span class="notification-type-badge @typeClass">
+                            <i class="fas @typeIcon"></i>
+                        </span>
+                    </div>
+                    
+                    <div class="notification-content-wrapper">
+                        <p class="notification-message">
+                            <strong>@senderName</strong> @notification.Content
+                        </p>
+                        <span class="notification-timestamp">
+                            @{
+                                var timeSpan = DateTime.Now - notification.CreatedAt;
+                                if (timeSpan.TotalMinutes < 1) { <text>Vừa xong</text> }
+                                else if (timeSpan.TotalMinutes < 60) { <text>@((int)timeSpan.TotalMinutes) phút trước</text> }
+                                else if (timeSpan.TotalHours < 24) { <text>@((int)timeSpan.TotalHours) giờ trước</text> }
+                                else { <text>@notification.CreatedAt.ToString("dd/MM/yyyy HH:mm")</text> }
+                            }
+                        </span>
+                    </div>
+                    
+                    @if (!notification.IsRead)
+                    {
+                        <i class="fas fa-circle text-primary" style="font-size: 10px; margin-left: 10px; color: var(--lofi-sage) !important;"></i>
+                    }
+                </a>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="empty-notification-state">
+            <i class="fas fa-bell-slash fa-4x mb-3 text-muted"></i>
+            <p>Bạn chưa có thông báo nào.</p>
+        </div>
+    }
 </div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/notification.css" asp-append-version="true" />
+}

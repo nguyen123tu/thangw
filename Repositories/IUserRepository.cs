@@ -13,6 +13,7 @@ namespace MTU.Repositories
         Task<User> UpdateAsync(User user);
         Task<bool> ExistsAsync(string username, string email);
         Task<List<User>> GetSuggestedFriendsAsync(int currentUserId, int limit);
+        Task<int> GetMutualFriendCountAsync(int currentUserId, int targetUserId);
         Task<string> SaveAvatarAsync(IFormFile file, int userId);
         Task<string> SaveCoverImageAsync(IFormFile file, int userId);
         Task<List<User>> SearchAsync(string query, int limit = 10);

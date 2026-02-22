@@ -88,6 +88,7 @@
     opacity: 0;
     transform: translateY(-30px) scale(0.95);
   }
+
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
@@ -101,5 +102,246 @@
     left: 10px;
     min-width: auto;
     max-width: none;
+  }
+}
+
+/* ============================================
+   CUSTOM DIALOG - Thay thế confirm() / alert()
+   Lo-Fi Hand-Drawn Style
+   ============================================ */
+
+/* Overlay */
+.mtu-dialog-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 99998;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  backdrop-filter: blur(2px);
+}
+
+.mtu-dialog-overlay.show {
+  opacity: 1;
+}
+
+/* Dialog Box */
+.mtu-dialog-box {
+  background: var(--lofi-cream, #FDF9E7);
+  border: 3px solid var(--border-primary, #2D2D2D);
+  border-radius: 18px 8px 16px 10px / 10px 16px 8px 18px;
+  box-shadow: 6px 6px 0px 0px var(--border-primary, #2D2D2D);
+  padding: 28px 32px 24px;
+  min-width: 320px;
+  max-width: 420px;
+  width: 90%;
+  transform: scale(0.85) translateY(20px);
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+}
+
+.mtu-dialog-overlay.show .mtu-dialog-box {
+  transform: scale(1) translateY(0);
+}
+
+/* Icon */
+.mtu-dialog-icon {
+  text-align: center;
+  margin-bottom: 12px;
+  font-size: 42px;
+  line-height: 1;
+}
+
+.mtu-dialog-icon.warn {
+  color: #F59E0B;
+}
+
+.mtu-dialog-icon.error {
+  color: #EF4444;
+}
+
+.mtu-dialog-icon.info {
+  color: var(--lofi-sage, #94AF86);
+}
+
+.mtu-dialog-icon.success {
+  color: #4ADE80;
+}
+
+/* Title */
+.mtu-dialog-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-primary, #2D2D2D);
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+/* Message */
+.mtu-dialog-message {
+  font-size: 14px;
+  color: var(--text-muted, #6B7280);
+  text-align: center;
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+
+/* Buttons */
+.mtu-dialog-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.mtu-dialog-btn {
+  flex: 1;
+  padding: 10px 20px;
+  border-radius: 8px 4px 8px 4px / 4px 8px 4px 8px;
+  border: 2.5px solid var(--border-primary, #2D2D2D);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: 3px 3px 0px 0px var(--border-primary, #2D2D2D);
+  font-family: inherit;
+}
+
+.mtu-dialog-btn:hover {
+  transform: translate(1px, 1px);
+  box-shadow: 2px 2px 0px 0px var(--border-primary, #2D2D2D);
+}
+
+.mtu-dialog-btn:active {
+  transform: translate(3px, 3px);
+  box-shadow: none;
+}
+
+.mtu-dialog-btn-confirm {
+  background: var(--lofi-sage, #94AF86);
+  color: #fff;
+}
+
+.mtu-dialog-btn-confirm.danger {
+  background: #EF4444;
+}
+
+.mtu-dialog-btn-cancel {
+  background: var(--lofi-white, #fff);
+  color: var(--text-primary, #2D2D2D);
+}
+
+/* Toast Stack */
+.mtu-toast-stack {
+  position: fixed;
+  top: 76px;
+  right: 20px;
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.mtu-toast {
+  background: var(--lofi-white, #fff);
+  border: 2.5px solid var(--border-primary, #2D2D2D);
+  border-radius: 10px 4px 10px 4px / 4px 10px 4px 10px;
+  box-shadow: 4px 4px 0px 0px var(--border-primary, #2D2D2D);
+  padding: 12px 18px;
+  min-width: 280px;
+  max-width: 380px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  pointer-events: all;
+  opacity: 0;
+  transform: translateX(420px);
+  transition: all 0.35s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.mtu-toast.show {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.mtu-toast.hide {
+  opacity: 0;
+  transform: translateX(420px);
+  transition: all 0.3s ease;
+}
+
+.mtu-toast-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.mtu-toast-body {
+  flex: 1;
+}
+
+.mtu-toast-text {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary, #2D2D2D);
+  line-height: 1.4;
+}
+
+.mtu-toast.success {
+  border-color: #4ADE80;
+}
+
+.mtu-toast.success .mtu-toast-icon {
+  color: #4ADE80;
+}
+
+.mtu-toast.error {
+  border-color: #EF4444;
+}
+
+.mtu-toast.error .mtu-toast-icon {
+  color: #EF4444;
+}
+
+.mtu-toast.warning {
+  border-color: #F59E0B;
+}
+
+.mtu-toast.warning .mtu-toast-icon {
+  color: #F59E0B;
+}
+
+.mtu-toast.info {
+  border-color: var(--lofi-sage, #94AF86);
+}
+
+.mtu-toast.info .mtu-toast-icon {
+  color: var(--lofi-sage, #94AF86);
+}
+
+@media (max-width: 480px) {
+  .mtu-toast-stack {
+    right: 10px;
+    left: 10px;
+  }
+
+  .mtu-toast {
+    min-width: auto;
+    max-width: none;
+    transform: translateY(-60px);
+  }
+
+  .mtu-toast.show {
+    transform: translateY(0);
+  }
+
+  .mtu-toast.hide {
+    transform: translateY(-60px);
+  }
+
+  .mtu-dialog-box {
+    max-width: 92vw;
   }
 }

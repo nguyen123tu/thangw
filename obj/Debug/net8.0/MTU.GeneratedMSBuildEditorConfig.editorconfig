@@ -9,119 +9,119 @@ build_property.EnforceExtendedAnalyzerRules =
 build_property._SupportedPlatformList = Linux,macOS,Windows
 build_property.RootNamespace = MTU
 build_property.RootNamespace = MTU
-build_property.ProjectDir = D:\2026 neww\v1_code web\DevMTU\
+build_property.ProjectDir = D:\DevMTU-20260210T030108Z-1-001\DevMTU\
 build_property.EnableComHosting = 
 build_property.EnableGeneratedComInterfaceComImportInterop = 
 build_property.RazorLangVersion = 8.0
 build_property.SupportLocalizedComponentNames = 
 build_property.GenerateRazorMetadataSourceChecksumAttributes = 
-build_property.MSBuildProjectDirectory = D:\2026 neww\v1_code web\DevMTU
+build_property.MSBuildProjectDirectory = D:\DevMTU-20260210T030108Z-1-001\DevMTU
 build_property._RazorSourceGeneratorDebug = 
 
-[D:/2026 neww/v1_code web/DevMTU/Views/Home/Explore.cshtml]
+[D:/DevMTU-20260210T030108Z-1-001/DevMTU/Views/Home/Explore.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxFeHBsb3JlLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/2026 neww/v1_code web/DevMTU/Views/Home/Index.cshtml]
+[D:/DevMTU-20260210T030108Z-1-001/DevMTU/Views/Home/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/2026 neww/v1_code web/DevMTU/Views/Home/LinkMssv.cshtml]
+[D:/DevMTU-20260210T030108Z-1-001/DevMTU/Views/Home/LinkMssv.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxMaW5rTXNzdi5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/2026 neww/v1_code web/DevMTU/Views/Home/Login.cshtml]
+[D:/DevMTU-20260210T030108Z-1-001/DevMTU/Views/Home/Login.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxMb2dpbi5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/2026 neww/v1_code web/DevMTU/Views/Home/Privacy.cshtml]
+[D:/DevMTU-20260210T030108Z-1-001/DevMTU/Views/Home/Privacy.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxQcml2YWN5LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/2026 neww/v1_code web/DevMTU/Views/Home/Profile.cshtml]
+[D:/DevMTU-20260210T030108Z-1-001/DevMTU/Views/Home/Profile.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxQcm9maWxlLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/2026 neww/v1_code web/DevMTU/Views/Home/Register.cshtml]
+[D:/DevMTU-20260210T030108Z-1-001/DevMTU/Views/Home/Register.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxSZWdpc3Rlci5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/2026 neww/v1_code web/DevMTU/Views/Home/Settings.cshtml]
+[D:/DevMTU-20260210T030108Z-1-001/DevMTU/Views/Home/Settings.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxTZXR0aW5ncy5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/2026 neww/v1_code web/DevMTU/Views/Home/SetupProfile.cshtml]
+[D:/DevMTU-20260210T030108Z-1-001/DevMTU/Views/Home/SetupProfile.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxTZXR1cFByb2ZpbGUuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/2026 neww/v1_code web/DevMTU/Views/Message/Chat.cshtml]
+[D:/DevMTU-20260210T030108Z-1-001/DevMTU/Views/Message/Chat.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTWVzc2FnZVxDaGF0LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/2026 neww/v1_code web/DevMTU/Views/Message/Index.cshtml]
+[D:/DevMTU-20260210T030108Z-1-001/DevMTU/Views/Message/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTWVzc2FnZVxJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/2026 neww/v1_code web/DevMTU/Views/Notification/Index.cshtml]
+[D:/DevMTU-20260210T030108Z-1-001/DevMTU/Views/Notification/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTm90aWZpY2F0aW9uXEluZGV4LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/2026 neww/v1_code web/DevMTU/Views/Post/Details.cshtml]
+[D:/DevMTU-20260210T030108Z-1-001/DevMTU/Views/Post/Details.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUG9zdFxEZXRhaWxzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/2026 neww/v1_code web/DevMTU/Views/Post/Saved.cshtml]
+[D:/DevMTU-20260210T030108Z-1-001/DevMTU/Views/Post/Saved.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUG9zdFxTYXZlZC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/2026 neww/v1_code web/DevMTU/Views/Search/Index.cshtml]
+[D:/DevMTU-20260210T030108Z-1-001/DevMTU/Views/Search/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2VhcmNoXEluZGV4LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/2026 neww/v1_code web/DevMTU/Views/Shared/Error.cshtml]
+[D:/DevMTU-20260210T030108Z-1-001/DevMTU/Views/Shared/Error.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXEVycm9yLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/2026 neww/v1_code web/DevMTU/Views/Shared/_EditProfileModal.cshtml]
+[D:/DevMTU-20260210T030108Z-1-001/DevMTU/Views/Shared/_EditProfileModal.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9FZGl0UHJvZmlsZU1vZGFsLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/2026 neww/v1_code web/DevMTU/Views/Shared/_HeaderPartial.cshtml]
+[D:/DevMTU-20260210T030108Z-1-001/DevMTU/Views/Shared/_HeaderPartial.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9IZWFkZXJQYXJ0aWFsLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/2026 neww/v1_code web/DevMTU/Views/Shared/_LeftSidebarPartial.cshtml]
+[D:/DevMTU-20260210T030108Z-1-001/DevMTU/Views/Shared/_LeftSidebarPartial.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9MZWZ0U2lkZWJhclBhcnRpYWwuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/2026 neww/v1_code web/DevMTU/Views/Shared/_PostCardPartial.cshtml]
+[D:/DevMTU-20260210T030108Z-1-001/DevMTU/Views/Shared/_PostCardPartial.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9Qb3N0Q2FyZFBhcnRpYWwuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/2026 neww/v1_code web/DevMTU/Views/Shared/_RightSidebarPartial.cshtml]
+[D:/DevMTU-20260210T030108Z-1-001/DevMTU/Views/Shared/_RightSidebarPartial.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9SaWdodFNpZGViYXJQYXJ0aWFsLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/2026 neww/v1_code web/DevMTU/Views/Shared/_StoryPartial.cshtml]
+[D:/DevMTU-20260210T030108Z-1-001/DevMTU/Views/Shared/_StoryPartial.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9TdG9yeVBhcnRpYWwuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/2026 neww/v1_code web/DevMTU/Views/Shared/_ValidationScriptsPartial.cshtml]
+[D:/DevMTU-20260210T030108Z-1-001/DevMTU/Views/Shared/_ValidationScriptsPartial.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9WYWxpZGF0aW9uU2NyaXB0c1BhcnRpYWwuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/2026 neww/v1_code web/DevMTU/Views/Story/View.cshtml]
+[D:/DevMTU-20260210T030108Z-1-001/DevMTU/Views/Story/View.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3RvcnlcVmlldy5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/2026 neww/v1_code web/DevMTU/Views/_ViewImports.cshtml]
+[D:/DevMTU-20260210T030108Z-1-001/DevMTU/Views/_ViewImports.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcX1ZpZXdJbXBvcnRzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/2026 neww/v1_code web/DevMTU/Views/_ViewStart.cshtml]
+[D:/DevMTU-20260210T030108Z-1-001/DevMTU/Views/_ViewStart.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcX1ZpZXdTdGFydC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/2026 neww/v1_code web/DevMTU/Views/Shared/_Layout.cshtml]
+[D:/DevMTU-20260210T030108Z-1-001/DevMTU/Views/Shared/_Layout.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9MYXlvdXQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = b-kbpsqzhl1o

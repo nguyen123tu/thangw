@@ -49,8 +49,24 @@ namespace MTU.Controllers
             bool isOwnStory = story.UserId == userId;
             if (!isOwnStory)
             {
-                story.ViewCount++; // Fix lượt xem ở chỗ này kiểm tra user(n) dã xem chưa thay vì ++
-                await _context.SaveChangesAsync();
+                // Fix: Check if user already viewed this story
+                var hasViewed = await _context.Set<StoryView>()
+                    .AnyAsync(sv => sv.StoryId == id && sv.ViewerId == userId);
+
+                if (!hasViewed)
+                {
+                    story.ViewCount++;
+                    
+                    var storyView = new StoryView
+                    {
+                        StoryId = id,
+                        ViewerId = userId,
+                        ViewedAt = DateTime.Now
+                    };
+                    _context.Set<StoryView>().Add(storyView);
+
+                    await _context.SaveChangesAsync();
+                }
             }
 
             var currentUser = await _context.Users.FindAsync(userId);
@@ -59,6 +75,11 @@ namespace MTU.Controllers
                 ViewBag.CurrentUserAvatar = currentUser.Avatar ?? "/assets/user.png";
                 ViewBag.CurrentUserFullName = $"{currentUser.FirstName} {currentUser.LastName}".Trim();
             }
+
+            // Đếm lượt xem thực tế từ bảng StoryViews
+            var actualViewCount = await _context.Set<StoryView>()
+                .CountAsync(sv => sv.StoryId == id);
+            ViewBag.ActualViewCount = actualViewCount;
 
             var userStories = await _context.Set<Story>()
                 .Where(s => s.UserId == story.UserId && s.IsActive && s.ExpiresAt > DateTime.Now)
@@ -233,5 +254,134 @@ namespace MTU.Controllers
                 return Json(new { success = false, message = "Đã xảy ra lỗi" });
             }
         }
+        /// <summary>
+        /// Lấy danh sách người đã xem tin
+        /// </summary>
+        [HttpGet]
+        public async Task<IActionResult> GetStoryViewers(int storyId)
+        {
+            try
+            {
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+                if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
+                {
+                    return Json(new { success = false, message = "Unauthorized" });
+                }
+
+                var story = await _context.Set<Story>()
+                    .FirstOrDefaultAsync(s => s.StoryId == storyId);
+
+                if (story == null)
+                {
+                    return Json(new { success = false, message = "Story không tồn tại" });
+                }
+
+                if (story.UserId != userId)
+                {
+                    return Json(new { success = false, message = "Bạn không có quyền xem danh sách này" });
+                }
+
+                // Lấy viewers kèm emoji reaction nếu có
+                var viewers = await _context.Set<StoryView>()
+                    .Where(sv => sv.StoryId == storyId)
+                    .Include(sv => sv.Viewer)
+                    .OrderByDescending(sv => sv.ViewedAt)
+                    .Select(sv => new
+                    {
+                        userId      = sv.ViewerId,
+                        fullName    = sv.Viewer != null ? $"{sv.Viewer.FirstName} {sv.Viewer.LastName}".Trim() : "Người dùng ẩn danh",
+                        avatar      = sv.Viewer != null ? (sv.Viewer.Avatar ?? "/assets/user.png") : "/assets/user.png",
+                        viewedAt    = sv.ViewedAt.ToString("HH:mm dd/MM"),
+                        emoji       = _context.StoryReactions
+                                        .Where(r => r.StoryId == storyId && r.UserId == sv.ViewerId)
+                                        .Select(r => r.Emoji)
+                                        .FirstOrDefault()
+                    })
+                    .ToListAsync();
+
+                return Json(new { success = true, viewers });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting story viewers");
+                return Json(new { success = false, message = "Đã xảy ra lỗi" });
+            }
+        }
+
+        /// <summary>
+        /// Thả/đổi biểu tượng cảm xúc vào story của bạn bè
+        /// </summary>
+        [HttpPost]
+        public async Task<IActionResult> React([FromBody] StoryReactDto dto)
+        {
+            try
+            {
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+                if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
+                    return Json(new { success = false, message = "Unauthorized" });
+
+                var story = await _context.Stories
+                    .FirstOrDefaultAsync(s => s.StoryId == dto.StoryId && s.IsActive && s.ExpiresAt > DateTime.Now);
+
+                if (story == null)
+                    return Json(new { success = false, message = "Story không tồn tại hoặc đã hết hạn" });
+
+                if (story.UserId == userId)
+                    return Json(new { success = false, message = "Không thể react story của chính mình" });
+
+                // Emoji mapping
+                var emojiMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    { "heart", "❤️" }, { "fire", "🔥" }, { "laugh", "😂" },
+                    { "wow",   "😮" }, { "sad",  "😢" }, { "clap",  "👏" }
+                };
+
+                if (!emojiMap.TryGetValue(dto.ReactionType, out var emoji))
+                    return Json(new { success = false, message = "Loại reaction không hợp lệ" });
+
+                // Upsert: đã react thì cập nhật, chưa thì tạo mới
+                var existing = await _context.StoryReactions
+                    .FirstOrDefaultAsync(r => r.StoryId == dto.StoryId && r.UserId == userId);
+
+                bool isNew = existing == null;
+                if (isNew)
+                {
+                    existing = new StoryReaction
+                    {
+                        StoryId      = dto.StoryId,
+                        UserId       = userId,
+                        ReactionType = dto.ReactionType,
+                        Emoji        = emoji,
+                        CreatedAt    = DateTime.Now
+                    };
+                    _context.StoryReactions.Add(existing);
+                }
+                else
+                {
+                    existing.ReactionType = dto.ReactionType;
+                    existing.Emoji        = emoji;
+                    existing.CreatedAt    = DateTime.Now;
+                }
+
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation("User {UserId} reacted {Emoji} to story {StoryId}", userId, emoji, dto.StoryId);
+
+                return Json(new { success = true, emoji, isNew });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error reacting to story");
+                return Json(new { success = false, message = "Đã xảy ra lỗi" });
+            }
+        }
+    }
+
+    // DTO cho React endpoint
+    public class StoryReactDto
+    {
+        public int StoryId { get; set; }
+        public string ReactionType { get; set; } = string.Empty;
     }
 }
+

@@ -158,7 +158,7 @@
         const content = commentInput.value.trim();
 
         if (!content) {
-            alert('Vui lòng nhập nội dung bình luận');
+            MTUDialog.warning('Vui lòng nhập nội dung bình luận');
             return;
         }
 
@@ -218,7 +218,7 @@
 
         } catch (error) {
             console.error('Error adding comment:', error);
-            alert('Không thể thêm bình luận. Vui lòng thử lại.');
+            MTUDialog.error('Không thể thêm bình luận. Vui lòng thử lại.');
         } finally {
             button.disabled = false;
             commentInput.disabled = false;
@@ -318,40 +318,51 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert(data.message);
+                    MTUDialog.success(data.message || 'Đã cập nhật quyền riêng tư');
                     // Close menu
                     document.querySelectorAll('.post-menu-dropdown').forEach(d => d.classList.remove('show'));
                 } else {
-                    alert(data.message);
+                    MTUDialog.error(data.message || 'Không thể cập nhật');
                 }
             })
             .catch(error => console.error('Error:', error));
     };
 
     // Placeholder for other actions
-    window.deletePost = function (postId) {
-        if (confirm('Bạn có chắc chắn muốn xóa bài viết này không?')) {
-            fetch(`/Post/Delete?id=${postId}`, {
-                method: 'POST'
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        const postCard = document.querySelector(`.post-card[data-post-id="${postId}"]`);
-                        if (postCard) {
-                            postCard.remove();
-                        }
-                        alert(data.message);
-                    } else {
-                        alert(data.message);
+    window.deletePost = async function (postId) {
+        const confirmed = await MTUDialog.confirm({
+            title: 'Xóa bài viết',
+            message: 'Bài viết sẽ bị xóa vĩnh viễn. Bạn có chắc chắn không?',
+            type: 'delete',
+            confirmText: 'Xóa',
+            cancelText: 'Hủy',
+            danger: true
+        });
+        if (!confirmed) return;
+
+        fetch(`/Post/Delete?id=${postId}`, {
+            method: 'POST'
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const postCard = document.querySelector(`.post-card[data-post-id="${postId}"]`);
+                    if (postCard) {
+                        postCard.style.transition = 'all 0.3s ease';
+                        postCard.style.opacity = '0';
+                        postCard.style.transform = 'translateX(-100%)';
+                        setTimeout(() => postCard.remove(), 300);
                     }
-                })
-                .catch(error => console.error('Error:', error));
-        }
+                    MTUDialog.success(data.message || 'Đã xóa bài viết');
+                } else {
+                    MTUDialog.error(data.message || 'Không thể xóa bài viết');
+                }
+            })
+            .catch(error => console.error('Error:', error));
     };
 
     window.editPost = function (postId) {
-        alert('Tính năng chỉnh sửa đang phát triển');
+        MTUDialog.info('Tính năng chỉnh sửa đang phát triển');
     };
 
     function initialize() {
