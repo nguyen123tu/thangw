@@ -122,7 +122,7 @@ namespace MTU.Controllers
                 return View(dto);
             }
 
-            TempData["AuthSuccess"] = "Đăng ký thành công! Vui lòng đăng nhập.";
+            TempData["AuthSuccess"] = result.ErrorMessage;
             return RedirectToAction("Login");
         }
 
